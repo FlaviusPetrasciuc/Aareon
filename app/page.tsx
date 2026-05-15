@@ -3,7 +3,12 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown } from 'lucide-react';
+
+import { Input } from '@/components/create-new-posting/Input';
+import { FieldLabel } from '@/components/create-new-posting/FieldLabel';
+import { Select } from '@/components/create-new-posting/Select';
+import { SegmentedControl } from '@/components/create-new-posting/SegmentedControl';
+
 import { userAgent } from 'next/server';
 
 interface FormData {
@@ -17,6 +22,7 @@ interface FormData {
     companyCar: boolean;
     companyPhone: boolean;
     currency: string;
+    education: string,
     template: string;
 }
 
@@ -42,6 +48,7 @@ export default function CreateJobPostingPage() {
         companyCar: false,
         companyPhone: false,
         currency: 'EUR',
+        education: '',
         template: '',
     });
 
@@ -165,7 +172,7 @@ export default function CreateJobPostingPage() {
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* Work mode */}
                             <div>
-                                <FieldLabel label="Work mode" />
+                                <FieldLabel label="Work Mode" />
 
                                 <SegmentedControl
                                     value={formData.workMode}
@@ -238,7 +245,7 @@ export default function CreateJobPostingPage() {
                             </div>
                             {/* Work Equipment */}
                             <div>
-                                <FieldLabel label="Work equipment" />
+                                <FieldLabel label="Work Equipment (optional)" />
 
                                 <div className="flex items-center gap-10 mt-6">
                                     <label className="flex items-center gap-2 cursor-pointer">
@@ -264,7 +271,32 @@ export default function CreateJobPostingPage() {
                                     </label>
                                 </div>
                             </div>
+                        </div>
 
+                        {/* Education level */}
+                        <div>
+                            <FieldLabel label="Minimum Required Education Level" required />
+
+                            <Select
+                                name="template"
+                                value={formData.education}
+                                onChange={handleInputChange}
+                                options={[
+                                    { label: '—', value: '' },
+                                    {
+                                        label: 'HBO',
+                                        value: 'hbo',
+                                    },
+                                    {
+                                        label: 'WO',
+                                        value: 'wo',
+                                    },
+                                    {
+                                        label: 'MBO',
+                                        value: 'mbo'
+                                    },
+                                ]}
+                            />
                         </div>
 
                         {/* Template */}
@@ -276,7 +308,7 @@ export default function CreateJobPostingPage() {
                                 value={formData.template}
                                 onChange={handleInputChange}
                                 options={[
-                                    { label: '— None —', value: '' },
+                                    { label: '—', value: '' },
                                     {
                                         label: 'Frontend Engineer',
                                         value: 'frontend',
@@ -307,104 +339,5 @@ export default function CreateJobPostingPage() {
                 </div>
             </div>
         </main>
-    );
-}
-
-function FieldLabel({
-    label,
-    required,
-}: {
-    label: string;
-    required?: boolean;
-}) {
-    return (
-        <label className="mb-3 block text-[15px] font-medium text-[#374151]">
-            {label}
-            {required && <span className="ml-1 text-[#ef4444]">*</span>}
-        </label>
-    );
-}
-
-function Input(
-    props: React.InputHTMLAttributes<HTMLInputElement>
-) {
-    return (
-        <input
-            {...props}
-            className="
-        h-12 w-full rounded-xl border border-[#d6d3d1]
-        bg-white px-4 text-[15px] outline-none transition
-        placeholder:text-gray-400
-        focus:border-[#172033]
-      "
-        />
-    );
-}
-
-function Select({
-    options,
-    ...props
-}: React.SelectHTMLAttributes<HTMLSelectElement> & {
-    options: { label: string; value: string }[];
-}) {
-    return (
-        <div className="relative">
-            <select
-                {...props}
-                className="
-          h-12 w-full appearance-none rounded-xl
-          border border-[#d6d3d1]
-          bg-white px-4 text-[15px]
-          outline-none transition
-          focus:border-[#172033]
-        "
-            >
-                {options.map((option) => (
-                    <option
-                        key={option.value}
-                        value={option.value}
-                    >
-                        {option.label}
-                    </option>
-                ))}
-            </select>
-
-            <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-        </div>
-    );
-}
-
-function SegmentedControl({
-    options,
-    value,
-    onChange,
-}: {
-    options: { label: string; value: string }[];
-    value: string;
-    onChange: (value: string) => void;
-}) {
-    return (
-        <div className="flex rounded-xl border border-[#d6d3d1] bg-[#f3f2ef] p-1">
-            {options.map((option) => {
-                const active = value === option.value;
-
-                return (
-                    <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => onChange(option.value)}
-                        className={`
-              flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition
-              ${active
-                                ? 'bg-white text-[#172033] shadow-sm'
-                                : 'text-gray-500 hover:text-[#172033]'
-                            }
-            `}
-                    >
-                        {option.label}
-                    </button>
-                );
-            })}
-        </div>
     );
 }
