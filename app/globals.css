@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-blue: #051163;
+  --color-bright: #086DFB;
+  --color-sand: #F7F3F0;
+  --color-stone: #EBE3DC;
+  --color-coral: #FF7F62;
+  --color-headline: #081326;
+  --color-body: #384152;
+}
+
+body {
+  background-color: var(--color-sand);
+  color: var(--color-body);
+  font-family: "Basis Grotesque", "Segoe UI", sans-serif;
+}

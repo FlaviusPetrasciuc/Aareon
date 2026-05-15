@@ -1,70 +1,61 @@
-# Getting Started with Create React App
+# Aareon Recruiter Intake Agent
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An AI-powered recruiter intake agent that helps hiring managers generate professional Job Descriptions and Hiring Kits through a structured interview process.
 
-## Available Scripts
+## Key Features
 
-In the project directory, you can run:
+- **Generative Intake Wizard**: Sophic Brutalist UI for answering intake questions.
+- **Multi-Provider Support**: Supports Anthropic (Claude), OpenAI (GPT), Google (Gemini), and OpenRouter.
+- **Sophic Brutalism Design**: High-contrast, grid-based aesthetic with editorial typography.
+- **Live Markdown Preview**: Real-time drafting of JDs and technical assessments.
+- **Session Persistence**: Progress is automatically saved locally.
 
-### `npm start`
+## Configuration
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The agent dynamically detects your AI provider based on environment variables in `.env.local`.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 1. Set up Environment Variables
+Copy the template below into your `.env.local` file:
 
-### `npm test`
+```bash
+# --- ANTHROPIC (Claude) ---
+# ANTHROPIC_API_KEY=your_key
+# ANTHROPIC_MODEL=claude-3-5-sonnet-20240620
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# --- OPENAI (GPT) ---
+# OPENAI_API_KEY=your_key
+# OPENAI_MODEL=gpt-4o
 
-### `npm run build`
+# --- GOOGLE (Gemini) ---
+# GOOGLE_GENERATIVE_AI_API_KEY=your_key
+# GOOGLE_MODEL=gemini-1.5-pro
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+# --- OPENROUTER (Universal) ---
+# OPENROUTER_API_KEY=your_key
+# OPENAI_MODEL=anthropic/claude-3.5-sonnet
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 2. Install Dependencies
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 3. Run Development Server
+```bash
+npm run dev
+```
 
-### `npm run eject`
+Open [http://localhost:3000](http://localhost:3000) to start an intake session.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Design Language: Sophic Brutalism
+This project implements a unique visual style characterized by:
+- **Bold Black Borders**: Solid 2px-4px strokes on all containers.
+- **Geometric Rigidity**: Square corners and strict grid alignment.
+- **Editorial Typography**: A mix of Playfair Display (Serif/Italic) and IBM Plex Mono (Technical).
+- **High Contrast**: Aareon Headline (#081326) on Sand (#F5F2ED).
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Project Structure
+- `/app`: Next.js 14 App Router and API routes.
+- `/components`: Sophic Brutalist UI components (Wizard, Preview, Cards).
+- `/lib`: Session management and export logic.
+- `/types`: TypeScript definitions for the intake flow.
