@@ -10,6 +10,7 @@ const config: Config = {
     ],
   },
   moduleNameMapper: {
+    "^nanoid$": "<rootDir>/__mocks__/nanoid.js",
     "^@/(.*)$": "<rootDir>/$1",
   },
   testMatch: ["**/*.test.ts", "**/*.test.tsx"],
