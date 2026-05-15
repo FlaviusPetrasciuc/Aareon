@@ -19,12 +19,15 @@ const config: Config = {
         },
       },
       fontFamily: {
-        title: ["Canela", "Georgia", "serif"],
-        body: ["Basis Grotesque", "Segoe UI", "sans-serif"],
+        title: ["var(--font-playfair)", "serif"],
+        body: ["var(--font-inter)", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require("@tailwindcss/typography"),
+  ],
 };
 
 export default config;
