@@ -10,26 +10,41 @@
     "test:ci": "jest --ci"
   },
   "dependencies": {
-    "@copilotkit/react-core": "^1.3.15",
-    "@copilotkit/runtime": "^1.3.15",
+    "@ai-sdk/openai": "^3.0.63",
+    "@anthropic-ai/sdk": "^0.57.0",
+    "@copilotkit/react-core": "^1.57.1",
+    "@copilotkit/react-ui": "^1.57.1",
+    "@copilotkit/runtime": "^1.57.1",
+    "@copilotkit/runtime-client-gql": "^1.57.1",
+    "@copilotkit/shared": "^1.57.1",
+    "@google/generative-ai": "^0.24.1",
+    "@tailwindcss/typography": "^0.5.19",
+    "ai": "^6.0.182",
+    "framer-motion": "^12.38.0",
     "nanoid": "^5.0.7",
     "next": "^14.2.5",
+    "openai": "^6.37.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
+    "uuid": "^11.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20.14.9",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.19",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.6",
-    "ts-jest": "^29.2.2",
+    "ts-jest": "^29.1.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   }
 }
