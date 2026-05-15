@@ -36,6 +36,7 @@ export default function WizardPanel({
 }: WizardPanelProps) {
   const [customText, setCustomText] = useState("");
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   const customInputId = useId();
 
   useCopilotAdditionalInstructions({
@@ -129,9 +130,13 @@ export default function WizardPanel({
       { name: "jobDescription", type: "string", description: "The complete job description in Markdown" },
     ],
     handler: async ({ jobDescription }: { jobDescription: string }) => {
-      const updated = updateJD(session, jobDescription);
-      onSessionUpdate(updated);
-      onJDUpdate(jobDescription);
+      try {
+        const updated = updateJD(session, jobDescription);
+        onSessionUpdate(updated);
+        onJDUpdate(jobDescription);
+      } catch {
+        setAiError("Failed to save job description.");
+      }
     },
     render: "Generating job description…",
   });
@@ -143,15 +148,31 @@ export default function WizardPanel({
       { name: "hiringKit", type: "string", description: "The hiring kit in Markdown" },
     ],
     handler: async ({ hiringKit }: { hiringKit: string }) => {
-      const updated = updateHiringKit(session, hiringKit);
-      onSessionUpdate(updated);
-      onHiringKitUpdate(hiringKit);
+      try {
+        const updated = updateHiringKit(session, hiringKit);
+        onSessionUpdate(updated);
+        onHiringKitUpdate(hiringKit);
+      } catch {
+        setAiError("Failed to save hiring kit.");
+      }
     },
     render: "Generating hiring kit…",
   });
 
   return (
     <div className="flex flex-col h-full p-5 overflow-y-auto">
+      {aiError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-600 flex items-center justify-between mb-3">
+          <span>AI connection error. Your answers are saved.</span>
+          <button
+            type="button"
+            onClick={() => setAiError(null)}
+            className="underline ml-2"
+          >
+            Retry
+          </button>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs font-bold text-aareon-blue uppercase tracking-widest">
           Intake Interview
