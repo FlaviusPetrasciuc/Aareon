@@ -1,191 +1,410 @@
-"use client";
+// app/page.tsx
+'use client';
 
-import { useState, useEffect } from "react";
-import { useCopilotAction, useCopilotChat } from "@copilotkit/react-core";
-import { MessageRole, TextMessage } from "@copilotkit/runtime-client-gql";
-import { CopilotChat } from "@copilotkit/react-ui";
-import { WizardPanel } from "@/components/WizardPanel";
-import { JDPreviewPanel } from "@/components/JDPreviewPanel";
-import { IntakeSession } from "@/types/intake";
-import {
-  getSession,
-  createSession,
-  appendAnswer,
-  updateJD,
-  updateHiringKit,
-} from "@/lib/session";
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChevronDown } from 'lucide-react';
+import { userAgent } from 'next/server';
 
-export default function Home() {
-  const [session, setSession] = useState<IntakeSession | null>(null);
-  const { appendMessage } = useCopilotChat();
+interface FormData {
+    jobTitle: string;
+    department: string;
+    location: string;
+    workMode: 'on-site' | 'hybrid' | 'remote';
+    employmentType: 'permanent' | 'contract' | 'internship';
+    salaryMin: string;
+    salaryMax: string;
+    companyCar: boolean;
+    companyPhone: boolean;
+    currency: string;
+    template: string;
+}
 
-  // Load session from localStorage on mount
-  useEffect(() => {
-    const saved = getSession();
-    if (saved) setSession(saved);
-  }, []);
+const steps = [
+    'Basics',
+    'Job description',
+    'Overview',
+    'Forward to recruiter',
+];
 
-  // ── Copilot Actions ─────────────────────────────────────────────────────────
+export default function CreateJobPostingPage() {
+    const [currentStep] = useState(1);
+    const router = useRouter();
 
-  useCopilotAction({
-    name: "startIntake",
-    description:
-      "Start a new recruiter intake interview session for a specific job title. Call this as soon as the hiring manager provides the role they are hiring for.",
-    parameters: [
-      {
-        name: "jobTitle",
-        type: "string",
-        description: "The exact job title being hired for, e.g. 'Senior Backend Engineer'.",
-        required: true,
-      },
-    ],
-    handler: ({ jobTitle }) => {
-      const newSession = createSession(jobTitle);
-      setSession(newSession);
-    },
-  });
+    const [formData, setFormData] = useState<FormData>({
+        jobTitle: '',
+        department: '',
+        location: '',
+        workMode: 'hybrid',
+        employmentType: 'permanent',
+        salaryMin: '',
+        salaryMax: '',
+        companyCar: false,
+        companyPhone: false,
+        currency: 'EUR',
+        template: '',
+    });
 
-  useCopilotAction({
-    name: "updateJD",
-    description:
-      "Update the live Job Description draft in the preview panel. Call this after every answered question to progressively build the JD in markdown format.",
-    parameters: [
-      {
-        name: "content",
-        type: "string",
-        description:
-          "The full markdown content of the Job Description so far. Use headings, bullets, and bold text.",
-        required: true,
-      },
-    ],
-    handler: ({ content }) => {
-      setSession((prev) => {
-        if (!prev) return null;
-        return updateJD(prev, content);
-      });
-    },
-  });
+    const handleNext = async () => {
+        console.log('Form data:', formData);
+        router.push('/ai-recruiter');
+    };
 
-  useCopilotAction({
-    name: "generateHiringKit",
-    description:
-      "Generate and display the complete Hiring Kit (interview scorecard, culture-fit questions, onboarding checklist) once all 8 intake questions are answered.",
-    parameters: [
-      {
-        name: "content",
-        type: "string",
-        description:
-          "The full markdown content of the Hiring Kit. Include interview questions with scoring rubrics, culture checks, and a 30-60-90 day onboarding outline.",
-        required: true,
-      },
-    ],
-    handler: ({ content }) => {
-      setSession((prev) => {
-        if (!prev) return null;
-        return updateHiringKit(prev, content);
-      });
-    },
-  });
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+        
+        if (type === 'checkbox') {
+            const checked = (e.target as HTMLInputElement).checked;
+            setFormData(prev => ({ ...prev, [name]: checked }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
+    };
 
-  // ── Answer handler ──────────────────────────────────────────────────────────
-  const handleAnswer = (questionId: string, question: string, answer: string) => {
-    if (!session) return;
-    const updated = appendAnswer(session, { questionId, question, answer });
-    setSession(updated);
+    return (
+        <main className="min-h-screen bg-[#f7f6f3] text-[#1f2937]">
+            <div className="mx-auto max-w-7xl px-8 py-8">
+                {/* Header */}
+                <div className="mb-10 flex items-start justify-between">
+                    <div>
+                        <p className="mb-3 text-sm text-gray-500">Basics · 1/4</p>
 
-    // Send the answer to the Copilot Agent so it can proceed to the next question
-    appendMessage(
-      new TextMessage({
-        role: MessageRole.User,
-        content: `I select: ${answer}`,
-      })
+                        <h1 className="text-5xl font-serif tracking-tight text-[#172033]">
+                            Create new job posting
+                        </h1>
+
+                        <p className="mt-3 text-lg text-gray-500">
+                            Four steps — about 3 minutes
+                        </p>
+                    </div>
+                </div>
+
+                {/* Stepper */}
+                <div className="mb-10 flex items-center">
+                    {steps.map((step, index) => {
+                        const stepNumber = index + 1;
+                        const active = currentStep === stepNumber;
+
+                        return (
+                            <React.Fragment key={step}>
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className={`
+                      flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium
+                      ${active
+                                                ? 'border-[#14213d] bg-[#14213d] text-white'
+                                                : 'border-[#d6d3d1] bg-white text-gray-500'
+                                            }
+                    `}
+                                    >
+                                        {stepNumber}
+                                    </div>
+
+                                    <span
+                                        className={`text-[15px] ${active ? 'text-[#172033]' : 'text-gray-500'
+                                            }`}
+                                    >
+                                        {step}
+                                    </span>
+                                </div>
+
+                                {index < steps.length - 1 && (
+                                    <div className="mx-5 h-px flex-1 bg-[#ddd8d2]" />
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
+                </div>
+
+                {/* Form */}
+                <div className="overflow-hidden rounded-2xl border border-[#e7e5e4] bg-[#f7f6f3]">
+                    <div className="space-y-8 p-8">
+                        {/* Job title */}
+                        <FieldLabel label="Job title" required />
+
+                        <Input
+                            name="jobTitle"
+                            value={formData.jobTitle}
+                            onChange={handleInputChange}
+                            placeholder="e.g. Senior Frontend Engineer"
+                        />
+
+                        {/* Row */}
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            {/* Department */}
+                            <div>
+                                <FieldLabel label="Department" required />
+
+                                <Select
+                                    name="department"
+                                    value={formData.department}
+                                    onChange={handleInputChange}
+                                    options={[
+                                        { label: '—', value: '' },
+                                        { label: 'Engineering', value: 'engineering' },
+                                        { label: 'Design', value: 'design' },
+                                        { label: 'Marketing', value: 'marketing' },
+                                    ]}
+                                />
+                            </div>
+
+                            {/* Location */}
+                            <div>
+                                <FieldLabel label="Location" required />
+
+                                <Input
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleInputChange}
+                                    placeholder="City, country"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Row */}
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            {/* Work mode */}
+                            <div>
+                                <FieldLabel label="Work mode" />
+
+                                <SegmentedControl
+                                    value={formData.workMode}
+                                    onChange={(value) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            workMode: value as FormData['workMode'],
+                                        }))
+                                    }
+                                    options={[
+                                        { label: 'On-site', value: 'on-site' },
+                                        { label: 'Hybrid', value: 'hybrid' },
+                                        { label: 'Remote', value: 'remote' },
+                                    ]}
+                                />
+                            </div>
+
+                            {/* Employment type */}
+                            <div>
+                                <FieldLabel label="Employment type" />
+
+                                <SegmentedControl
+                                    value={formData.employmentType}
+                                    onChange={(value) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            employmentType:
+                                                value as FormData['employmentType'],
+                                        }))
+                                    }
+                                    options={[
+                                        { label: 'Permanent', value: 'permanent' },
+                                        { label: 'Contract', value: 'contract' },
+                                        { label: 'Internship', value: 'internship' },
+                                    ]}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Row */}
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+
+                            {/* Salary */}
+                            <div>
+                                <FieldLabel label="Salary range (monthly)" />
+
+                                <div className="flex items-center gap-3">
+                                    <div className="relative w-28">
+                                        <div className="h-12 w-full appearance-none rounded-xl border border-[#d6d3d1] bg-white px-4 text-sm outline-none transition focus:border-[#172033] flex items-center justify-center">
+                                            {formData.currency}
+                                        </div>
+                                    </div>
+
+                                    <Input
+                                        name="salaryMin"
+                                        value={formData.salaryMin}
+                                        onChange={handleInputChange}
+                                        placeholder="min"
+                                    />
+
+                                    <span className="text-gray-400">—</span>
+
+                                    <Input
+                                        name="salaryMax"
+                                        value={formData.salaryMax}
+                                        onChange={handleInputChange}
+                                        placeholder="max"
+                                    />
+                                </div>
+                            </div>
+                            {/* Work Equipment */}
+                            <div>
+                                <FieldLabel label="Work equipment" />
+
+                                <div className="flex items-center gap-10 mt-6">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            name="companyCar"
+                                            checked={formData.companyCar}
+                                            onChange={handleInputChange}
+                                            className="w-6 h-6 rounded-xl border-[#d6d3d1] text-[#6b6fcf] focus:ring-[#6b6fcf] focus:ring-offset-0"
+                                        />
+                                        <span className="text-sm text-gray-700">Lease car</span>
+                                    </label>
+
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            name="companyPhone"
+                                            checked={formData.companyPhone}
+                                            onChange={handleInputChange}
+                                            className="w-6 h-6 rounded border-[#d6d3d1] text-[#6b6fcf] focus:ring-[#6b6fcf] focus:ring-offset-0"
+                                        />
+                                        <span className="text-sm text-gray-700">Company phone</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {/* Template */}
+                        <div>
+                            <FieldLabel label="Start from template (optional)" />
+
+                            <Select
+                                name="template"
+                                value={formData.template}
+                                onChange={handleInputChange}
+                                options={[
+                                    { label: '— None —', value: '' },
+                                    {
+                                        label: 'Frontend Engineer',
+                                        value: 'frontend',
+                                    },
+                                    {
+                                        label: 'Backend Engineer',
+                                        value: 'backend',
+                                    },
+                                ]}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-end border-t border-[#e7e5e4] bg-[#f7f6f3] px-8 py-6">
+                        <div className="flex items-center gap-3">
+                            <button className="rounded-xl border border-[#d6d3d1] bg-white px-5 py-3 font-medium text-[#172033] transition hover:bg-gray-50">
+                                Save draft
+                            </button>
+
+                            <button
+                                onClick={handleNext}
+                                className="rounded-xl bg-[#6b6fcf] px-5 py-3 font-medium text-white transition hover:opacity-90">
+                                Next →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     );
-  };
+}
 
-  // ── Render ──────────────────────────────────────────────────────────────────
-  return (
-    <main className="relative flex h-screen w-full overflow-hidden bg-aareon-sand">
-      {/* Background Grid Pattern */}
-      <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" 
-        style={{ backgroundImage: 'radial-gradient(#081326 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+function FieldLabel({
+    label,
+    required,
+}: {
+    label: string;
+    required?: boolean;
+}) {
+    return (
+        <label className="mb-3 block text-[15px] font-medium text-[#374151]">
+            {label}
+            {required && <span className="ml-1 text-[#ef4444]">*</span>}
+        </label>
+    );
+}
 
-      {/* Left: Intake Wizard */}
-      <div className="relative z-10 flex-1 overflow-hidden">
-        <WizardPanel session={session} onAnswer={handleAnswer} />
-      </div>
+function Input(
+    props: React.InputHTMLAttributes<HTMLInputElement>
+) {
+    return (
+        <input
+            {...props}
+            className="
+        h-12 w-full rounded-xl border border-[#d6d3d1]
+        bg-white px-4 text-[15px] outline-none transition
+        placeholder:text-gray-400
+        focus:border-[#172033]
+      "
+        />
+    );
+}
 
-      {/* Right: JD Preview */}
-      <div className="relative z-10 w-[460px] shrink-0 overflow-hidden">
-        <JDPreviewPanel session={session} />
-      </div>
+function Select({
+    options,
+    ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement> & {
+    options: { label: string; value: string }[];
+}) {
+    return (
+        <div className="relative">
+            <select
+                {...props}
+                className="
+          h-12 w-full appearance-none rounded-xl
+          border border-[#d6d3d1]
+          bg-white px-4 text-[15px]
+          outline-none transition
+          focus:border-[#172033]
+        "
+            >
+                {options.map((option) => (
+                    <option
+                        key={option.value}
+                        value={option.value}
+                    >
+                        {option.label}
+                    </option>
+                ))}
+            </select>
 
-      {/* Floating Chat Interface */}
-      <div className="fixed bottom-8 right-[490px] z-50">
-        <div className="flex h-[620px] w-[400px] flex-col overflow-hidden border-2 border-aareon-headline bg-white/90 backdrop-blur-xl shadow-[12px_12px_0px_0px_rgba(8,19,38,0.1)]">
-          {/* Chat header */}
-          <div className="flex h-12 shrink-0 items-center justify-between border-b-2 border-aareon-headline bg-aareon-headline px-4">
-            <div className="flex items-center gap-3">
-              <div className="h-2 w-2 rounded-full bg-aareon-bright animate-pulse" />
-              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-white">
-                Aareon AI / Recruiter
-              </span>
-            </div>
-            <div className="font-mono text-[9px] text-white/40 uppercase tracking-widest">
-              ID: AG-9000
-            </div>
-          </div>
-
-          <div className="min-h-0 flex-1 relative overflow-hidden">
-            <CopilotChat
-              className="absolute inset-0 h-full w-full"
-              instructions={`You are the Aareon Recruiter Intake Agent — a professional, concise AI assistant that helps hiring managers create perfect Job Descriptions.
-
-WORKFLOW:
-1. When the manager mentions a job title, call startIntake({ jobTitle }) immediately.
-2. Ask exactly 8 intake questions, ONE at a time, using presentOptions for each.
-3. After EVERY answer, call updateJD with a progressively richer markdown JD that incorporates all answers so far.
-4. After question 8 is answered, call generateHiringKit with a full hiring kit.
-
-THE 8 QUESTIONS (ask in order):
-Q1: Team size — How large is the immediate team this person will join?
-Q2: Seniority — What experience level are you looking for?
-Q3: Work model — Office, hybrid, or fully remote?
-Q4: Core skills — What are the 3 must-have technical skills?
-Q5: Soft skills — Which interpersonal trait matters most?
-Q6: Reporting line — Who does this role report to?
-Q7: Success metric — How will you measure success at 90 days?
-Q8: Comp range — What is the salary range for this role?
-
-RULES:
-- Always use presentOptions with 4 clear choices per question. Pass options as a JSON string.
-- Keep your chat messages brief — one sentence max before/after presenting options.
-- After all 8 answers: generate a complete JD AND hiring kit.`}
-              labels={{
-                title: "Hiring Intake",
-                initial:
-                  "Hi! I'm your Aareon Recruiter Agent. What role are we hiring for today?",
-              }}
-            />
-          </div>
+            <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
         </div>
-      </div>
+    );
+}
 
-      {/* Corporate Identity Overlay */}
-      <div className="fixed left-8 top-8 z-20">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center bg-aareon-headline text-white font-black text-2xl italic border-b-4 border-r-4 border-aareon-bright">
-            A
-          </div>
-          <div className="space-y-0">
-            <h1 className="font-title text-2xl italic text-aareon-headline tracking-tighter leading-none">
-              Recruiter Intake
-            </h1>
-            <p className="font-mono text-[9px] uppercase tracking-[0.5em] text-aareon-bright font-bold">
-              Powered by Aareon AI
-            </p>
-          </div>
+function SegmentedControl({
+    options,
+    value,
+    onChange,
+}: {
+    options: { label: string; value: string }[];
+    value: string;
+    onChange: (value: string) => void;
+}) {
+    return (
+        <div className="flex rounded-xl border border-[#d6d3d1] bg-[#f3f2ef] p-1">
+            {options.map((option) => {
+                const active = value === option.value;
+
+                return (
+                    <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => onChange(option.value)}
+                        className={`
+              flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition
+              ${active
+                                ? 'bg-white text-[#172033] shadow-sm'
+                                : 'text-gray-500 hover:text-[#172033]'
+                            }
+            `}
+                    >
+                        {option.label}
+                    </button>
+                );
+            })}
         </div>
-      </div>
-    </main>
-  );
+    );
 }
