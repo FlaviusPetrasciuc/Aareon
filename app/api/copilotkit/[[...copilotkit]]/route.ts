@@ -9,36 +9,55 @@ import { createOpenAI } from "@ai-sdk/openai";
 async function getRuntime(req: Request) {
   let agentConfig: any;
 
+  const apiKey = process.env.ANTHROPIC_API_KEY || 
+                 process.env.GOOGLE_GENERATIVE_AI_API_KEY || 
+                 process.env.OPENAI_API_KEY || 
+                 process.env.OPENROUTER_API_KEY || 
+                 process.env.AI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Missing AI API Key (AI_API_KEY, OPENAI_API_KEY, etc.)");
+  }
+
   if (process.env.ANTHROPIC_API_KEY) {
     agentConfig = {
       model: process.env.ANTHROPIC_MODEL || "anthropic/claude-3-5-sonnet-20240620",
       apiKey: process.env.ANTHROPIC_API_KEY,
     };
-  } else if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+  } else if (process.env.GOOGLE_GENERATIVE_AI_API_KEY && !process.env.AI_BASE_URL) {
     agentConfig = {
       model: process.env.GOOGLE_MODEL || "google/gemini-1.5-pro",
       apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
     };
-  } else if (process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY) {
-    const apiKey = process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY;
-    const baseURL = process.env.OPENROUTER_API_KEY && !process.env.OPENAI_API_KEY 
-      ? "https://openrouter.ai/api/v1" 
-      : undefined;
-
+  } else {
+    // OpenAI compatible (including OpenRouter, Gemini via OpenAI API, etc.)
+    const baseURL = process.env.AI_BASE_URL || 
+                    (process.env.OPENROUTER_API_KEY ? "https://openrouter.ai/api/v1" : undefined);
+    
     const openai = createOpenAI({
       apiKey,
       baseURL,
-      compatibility: 'compatible', // Better compatibility with OpenRouter/Gemini
+      compatibility: 'compatible',
     });
 
-    const modelName = process.env.OPENAI_MODEL || (process.env.OPENROUTER_API_KEY ? "anthropic/claude-3.5-sonnet" : "openai/gpt-4o");
+    const defaultModel = process.env.OPENROUTER_API_KEY ? "anthropic/claude-3.5-sonnet" : "gpt-4o";
+    const modelName = process.env.AI_MODEL || process.env.OPENAI_MODEL || defaultModel;
+
+    console.log("CopilotKit Runtime: Using OpenAI-compatible provider", { 
+      modelName, 
+      baseURL, 
+      hasApiKey: !!apiKey 
+    });
 
     agentConfig = {
       model: openai.chat(modelName),
     };
-  } else {
-    throw new Error("Missing AI API Key (OpenAI, Anthropic, or Google)");
   }
+
+  console.log("CopilotKit Runtime: Initializing with agent config", { 
+    isBuiltInAgent: true,
+    hasModel: !!agentConfig?.model
+  });
 
   const runtime = new CopilotRuntime({
     agents: {
