@@ -7,6 +7,7 @@ export interface Answer {
 export interface IntakeSession {
   id: string;
   jobTitle: string;
+  managerEmail: string;
   answers: Answer[];
   jd?: string;
   hiringKit?: string;

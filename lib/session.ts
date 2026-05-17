@@ -3,10 +3,11 @@ import type { IntakeSession, Answer } from "@/types/intake";
 
 export const SESSION_KEY = "aareon_intake_session";
 
-export function createSession(jobTitle: string): IntakeSession {
+export function createSession(jobTitle: string, managerEmail: string): IntakeSession {
   return {
     id: uuidv4(),
     jobTitle,
+    managerEmail,
     answers: [],
     createdAt: Date.now(),
     updatedAt: Date.now(),
