@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Pages that don't require authentication
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -27,7 +27,7 @@ export function middleware(request: NextRequest) {
   // Remove this once Supabase is wired up
   const isLoggedIn = request.cookies.get("aareon_session");
   if (!isLoggedIn) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
