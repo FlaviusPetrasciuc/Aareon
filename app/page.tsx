@@ -1,89 +1,138 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-export default function EmailPage() {
+export default function LoginPage() {
   const router = useRouter();
-  const [managerEmail, setManagerEmail] = useState("");
+  const [email, setEmail] = useState("");
+  const [touched, setTouched] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const normalizedEmail = managerEmail.trim().toLowerCase();
+  const isValid = /^[^\s@]+@(aareon\.nl|gmail\.com)$/.test(email);
+  const showError = touched && !isValid;
 
-  // For testing: allow @gmail.com too.
-  // Later remove the gmail line for production.
-  const isAllowedEmail =
-    normalizedEmail.endsWith("@aareon.nl") ||
-    normalizedEmail.endsWith("@gmail.com");
-
-  const handleContinue = () => {
-    if (!isAllowedEmail) {
-      alert("Please enter a valid @aareon.nl email address.");
-      return;
-    }
-
-    localStorage.setItem("managerEmail", normalizedEmail);
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setTouched(true);
+    if (!isValid) return;
+    setLoading(true);
+    
+    await new Promise((r) => setTimeout(r, 900));
+    setLoading(false);
     router.push("/intake");
-  };
+  }
 
   return (
-    <main className="flex h-screen w-full items-center justify-center bg-aareon-sand">
-      <div className="w-[420px] bg-white border-2 border-aareon-headline p-8 shadow-[12px_12px_0px_0px_rgba(8,19,38,0.1)]">
-        <div className="mb-6 flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center bg-aareon-headline text-white font-black text-2xl italic border-b-4 border-r-4 border-aareon-bright">
-            A
-          </div>
+    <div className="flex min-h-screen w-full">
 
-          <div>
-            <h1 className="font-title text-2xl italic text-aareon-headline">
-              Recruiter Intake
-            </h1>
+      {/* ── Left brand panel ── */}
+      <div className="relative hidden md:flex flex-col justify-between overflow-hidden w-[45%] shrink-0 bg-aareon-blue px-12 py-12">
+        {/* blobs */}
+        <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-aareon-bright/15 pointer-events-none" />
+        <div className="absolute -bottom-24 -right-14 w-96 h-96 rounded-full bg-aareon-bright/10 pointer-events-none" />
 
-            <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-aareon-bright font-bold">
-              Aareon AI
-            </p>
-          </div>
+        {/* Logo — white */}
+        <div className="relative z-10">
+          <Image
+            src="/aareon-logo.png"
+            alt="Aareon"
+            width={120}
+            height={28}
+            className="brightness-0 invert"
+          />
         </div>
 
-        <h2 className="mb-2 font-title text-3xl text-aareon-headline">
-          Welcome
-        </h2>
-
-        <p className="mb-6 text-sm text-aareon-body/70">
-          Please enter your email to continue to the AI recruiter intake.
-        </p>
-
-        <label className="block font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-aareon-headline mb-2">
-          Manager Email
-        </label>
-
-        <input
-          type="email"
-          value={managerEmail}
-          onChange={(e) => setManagerEmail(e.target.value)}
-          placeholder="name@aareon.nl"
-          className="w-full border-2 border-aareon-headline px-3 py-3 text-sm outline-none"
-        />
-
-        {managerEmail && !isAllowedEmail && (
-          <p className="mt-2 text-xs font-bold text-red-600">
-            Email must end with @aareon.nl
+        {/* Hero */}
+        <div className="relative z-10">
+          <h1 className="font-title text-[clamp(34px,4vw,50px)] font-normal leading-[1.08] text-white mb-5 italic">
+            Connecting<br />
+            <span className="text-aareon-coral not-italic">futures</span><br />
+            together.
+          </h1>
+          <p className="text-sm font-light text-white/60 leading-relaxed max-w-xs font-body">
+            The leading property SaaS platform connecting people, process and property across Europe.
           </p>
-        )}
+        </div>
 
-        {isAllowedEmail && (
-          <p className="mt-2 text-xs font-bold text-green-700">
-            Valid email ✓
-          </p>
-        )}
-
-        <button
-          onClick={handleContinue}
-          disabled={!isAllowedEmail}
-          className="mt-6 w-full bg-aareon-blue px-6 py-3 font-bold text-white disabled:opacity-50"
-        >
-          Continue to AI Intake
-        </button>
+        {/* Pills */}
+        <div className="relative z-10 flex flex-wrap gap-2">
+          {["People", "Process", "Property"].map((p) => (
+            <span
+              key={p}
+              className="font-mono text-[9px] font-medium tracking-[0.15em] uppercase text-white/45 border border-white/15 rounded-full px-3 py-1"
+            >
+              {p}
+            </span>
+          ))}
+        </div>
       </div>
-    </main>
+
+      {/* ── Right form panel ── */}
+      <div className="flex flex-1 items-center justify-center bg-aareon-sand px-10 py-12">
+        <div className="w-full max-w-sm">
+
+          <h2 className="font-title text-[28px] font-normal text-aareon-headline leading-tight mb-2 italic">
+            Sign in to<br />your workspace
+          </h2>
+          <p className="text-sm text-aareon-body font-light mb-9 leading-relaxed font-body">
+            Enter your company email to continue.
+          </p>
+
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="mb-5">
+              <label
+                htmlFor="email"
+                className="block font-mono text-[10px] font-medium tracking-[0.15em] uppercase text-aareon-body mb-2"
+              >
+                Company email
+              </label>
+              <input
+                id="email"
+                type="email"
+                autoFocus
+                autoComplete="email"
+                placeholder="you@aareon.nl"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => setTouched(true)}
+                className={[
+                  "w-full px-4 py-3 font-body text-sm font-light text-aareon-headline bg-white rounded-lg outline-none transition-all",
+                  showError
+                    ? "border-[1.5px] border-aareon-coral shadow-[0_0_0_3px_rgba(255,127,98,0.12)]"
+                    : "border-[1.5px] border-aareon-stone focus:border-aareon-bright focus:shadow-[0_0_0_3px_rgba(8,109,251,0.12)]",
+                ].join(" ")}
+              />
+              {showError && (
+                <p className="font-body text-xs text-aareon-coral mt-1.5">
+                  Please enter a valid @aareon.nl or @gmail.com email address.
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-aareon-blue hover:bg-[#0a1d8a] disabled:opacity-60 disabled:cursor-not-allowed text-white font-body text-[13px] font-medium tracking-wide rounded-lg transition-colors mt-1"
+            >
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>Continue <span>→</span></>
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <div className="mt-4 pt-2 border-t border-aareon-stone text-center">
+            <span className="font-body text-[11px] text-aareon-body/60 cursor-pointer hover:text-aareon-body transition-colors">
+              Privacy policy
+            </span>
+          </div>
+
+        </div>
+      </div>
+    </div>
   );
 }
