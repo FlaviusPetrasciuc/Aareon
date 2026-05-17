@@ -122,7 +122,7 @@ export default function CreateJobPostingPage() {
         saveToLocalStorage(formData);
         
         console.log('Form data saved and navigating:', formData);
-        router.push('/ai-recruiter');
+        router.push('/intake');
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

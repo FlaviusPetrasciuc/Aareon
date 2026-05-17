@@ -29,7 +29,7 @@ export default function LoginPage() {
     document.cookie = `aareon_session=${normalizedEmail}; path=/; max-age=86400`;
 
     await new Promise((r) => setTimeout(r, 900));
-    router.push("/intake");
+    router.push("/basics");
   }
 
   return (
