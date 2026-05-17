@@ -18,10 +18,7 @@ export default function LoginPage() {
     setTouched(true);
     if (!isValid) return;
     setLoading(true);
-
-    // TODO: swap this for Supabase magic link:
-    // const { error } = await supabase.auth.signInWithOtp({ email });
-    // if (error) { setLoading(false); return; }
+    
     await new Promise((r) => setTimeout(r, 900));
     setLoading(false);
     router.push("/intake");
@@ -128,12 +125,9 @@ export default function LoginPage() {
           </form>
 
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-aareon-stone flex justify-between">
+          <div className="mt-4 pt-2 border-t border-aareon-stone text-center">
             <span className="font-body text-[11px] text-aareon-body/60 cursor-pointer hover:text-aareon-body transition-colors">
               Privacy policy
-            </span>
-            <span className="font-body text-[11px] text-aareon-body/60 cursor-pointer hover:text-aareon-body transition-colors">
-              Need help?
             </span>
           </div>
 
