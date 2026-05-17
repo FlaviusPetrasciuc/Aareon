@@ -16,11 +16,19 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setTouched(true);
-    if (!isValid) return;
+
+    if (!isValid) {
+      alert("Please enter a valid @aareon.nl or @gmail.com email address.");
+
+      return;
+    };
     setLoading(true);
-    
+
+    const normalizedEmail = email.trim().toLowerCase();
+    localStorage.setItem("managerEmail", normalizedEmail);
+    document.cookie = `aareon_session=${normalizedEmail}; path=/; max-age=86400`;
+
     await new Promise((r) => setTimeout(r, 900));
-    setLoading(false);
     router.push("/intake");
   }
 
@@ -79,6 +87,22 @@ export default function LoginPage() {
           <p className="text-sm text-aareon-body font-light mb-9 leading-relaxed font-body">
             Enter your company email to continue.
           </p>
+
+          {loading && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl p-8 flex flex-col items-center gap-4 shadow-xl">
+                <div className="w-12 h-12 border-4 border-aareon-stone border-t-aareon-bright rounded-full animate-spin" />
+
+                <p className="text-aareon-headline font-body text-lg">
+                  Redirecting you to the next page...
+                </p>
+
+                <p className="text-aareon-body/60 text-sm">
+                  Please wait, this will only take a moment
+                </p>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="mb-5">
