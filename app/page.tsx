@@ -19,6 +19,9 @@ export default function LoginPage() {
     if (!isValid) return;
     setLoading(true);
     
+    const normalizedEmail = email.trim().toLowerCase();
+    localStorage.setItem("managerEmail", normalizedEmail);
+
     await new Promise((r) => setTimeout(r, 900));
     setLoading(false);
     router.push("/intake");
