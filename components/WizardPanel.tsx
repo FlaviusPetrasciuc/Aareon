@@ -96,6 +96,10 @@ export function WizardPanel({ session, onAnswer }: WizardPanelProps) {
         options = [];
       }
 
+      if (!question || !questionId) {
+        return null;
+      }
+
       return (
         <div className="flex flex-col gap-6 py-6">
           <div className="space-y-1">
