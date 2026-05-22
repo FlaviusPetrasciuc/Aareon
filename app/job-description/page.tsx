@@ -60,6 +60,9 @@ export default function JobDescriptionPage() {
     benefits: '',
   });
 
+  const STORAGE_KEY = 'jobDescriptionFormData';
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const handleChange = (field: keyof FormState, value: string) => {
     const updated = { ...form, [field]: value };
     setForm(updated);
@@ -76,9 +79,6 @@ export default function JobDescriptionPage() {
     setLang(v);
     localStorage.setItem('aareon.lang', v);
   };
-
-  const STORAGE_KEY = 'jobDescriptionFormData';
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const savedLang = localStorage.getItem('aareon.lang') as 'en' | 'nl' | null;
