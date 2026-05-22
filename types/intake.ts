@@ -19,3 +19,15 @@ export interface WizardQuestion {
   options: string[];
   hint: string;
 }
+
+export interface QuestionOption {
+  id: string;
+  title: string;
+  description: string;
+}
+
+export interface QuestionState {
+  questionId: string;
+  question: string;
+  options: QuestionOption[];
+}
