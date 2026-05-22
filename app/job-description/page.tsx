@@ -69,7 +69,30 @@ export default function JobDescriptionPage() {
           style={{ borderColor: 'var(--color-stone)', backgroundColor: 'var(--color-sand)' }}
         >
           <div className="space-y-6 p-8">
-            {/* fields go here in later tasks */}
+            {/* Draft with AI banner */}
+            <div className="flex items-center gap-4 rounded-xl p-4" style={{ backgroundColor: '#FFD8CA' }}>
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xl"
+                style={{ backgroundColor: '#FF7F62', color: 'white' }}
+              >
+                ✨
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-headline)' }}>
+                  ✨ Draft with AI
+                </p>
+                <p className="text-xs" style={{ color: 'var(--color-body)' }}>
+                  Uses previous successful Aareon postings as a base.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
+                style={{ backgroundColor: '#FF7F62' }}
+              >
+                ✨ Draft with AI
+              </button>
+            </div>
           </div>
 
           {/* Footer */}
