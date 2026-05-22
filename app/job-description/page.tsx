@@ -94,6 +94,17 @@ export default function JobDescriptionPage() {
     }
   }, []);
 
+  const isNextEnabled = form.summary.trim() !== '' || form.responsibilities.trim() !== '';
+
+  const handleNext = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
+    router.push('/Overview');
+  };
+
+  const handleSaveDraft = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
+  };
+
   const S = STRINGS[lang];
 
   return (
@@ -247,6 +258,7 @@ export default function JobDescriptionPage() {
             <div className="flex flex-1 items-center justify-end gap-3">
               <button
                 type="button"
+                onClick={handleSaveDraft}
                 className="rounded-xl border bg-white px-5 py-3 font-medium transition hover:bg-gray-50"
                 style={{ borderColor: 'var(--color-stone)', color: 'var(--color-headline)' }}
               >
@@ -262,7 +274,9 @@ export default function JobDescriptionPage() {
               </button>
               <button
                 type="button"
-                className="rounded-xl px-5 py-3 font-medium text-white"
+                onClick={isNextEnabled ? handleNext : undefined}
+                disabled={!isNextEnabled}
+                className={`rounded-xl px-5 py-3 font-medium text-white transition ${isNextEnabled ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}
                 style={{ backgroundColor: 'var(--color-blue)' }}
               >
                 {S.next}
