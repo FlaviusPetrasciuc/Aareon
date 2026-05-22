@@ -1,13 +1,36 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { FieldLabel } from '@/components/basics/FieldLabel';
 
 const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
 const CURRENT_STEP = 2;
 
+interface FormState {
+  summary: string;
+  responsibilities: string;
+  requirements: string;
+  benefits: string;
+}
+
+const textareaClass =
+  'w-full rounded-xl border border-[#d6d3d1] bg-white px-4 py-3 text-[15px] ' +
+  'text-[#172033] outline-none transition resize-vertical ' +
+  'placeholder:text-gray-400 focus:border-[#172033]';
+
 export default function JobDescriptionPage() {
   const router = useRouter();
+  const [form, setForm] = useState<FormState>({
+    summary: '',
+    responsibilities: '',
+    requirements: '',
+    benefits: '',
+  });
+
+  const handleChange = (field: keyof FormState, value: string) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  };
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: 'var(--color-sand)', color: 'var(--color-body)' }}>
@@ -92,6 +115,50 @@ export default function JobDescriptionPage() {
               >
                 ✨ Draft with AI
               </button>
+            </div>
+
+            {/* Summary */}
+            <div>
+              <FieldLabel label="Summary" />
+              <textarea
+                rows={3}
+                className={textareaClass}
+                value={form.summary}
+                onChange={e => handleChange('summary', e.target.value)}
+              />
+            </div>
+
+            {/* Responsibilities */}
+            <div>
+              <FieldLabel label="Responsibilities" />
+              <textarea
+                rows={5}
+                className={textareaClass}
+                value={form.responsibilities}
+                onChange={e => handleChange('responsibilities', e.target.value)}
+              />
+            </div>
+
+            {/* Requirements + What we offer — two columns */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <FieldLabel label="Requirements" />
+                <textarea
+                  rows={5}
+                  className={textareaClass}
+                  value={form.requirements}
+                  onChange={e => handleChange('requirements', e.target.value)}
+                />
+              </div>
+              <div>
+                <FieldLabel label="What we offer" />
+                <textarea
+                  rows={5}
+                  className={textareaClass}
+                  value={form.benefits}
+                  onChange={e => handleChange('benefits', e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
