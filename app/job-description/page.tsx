@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FieldLabel } from '@/components/basics/FieldLabel';
 import { SegmentedControl } from '@/components/basics/SegmentedControl';
@@ -61,7 +61,12 @@ export default function JobDescriptionPage() {
   });
 
   const handleChange = (field: keyof FormState, value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    const updated = { ...form, [field]: value };
+    setForm(updated);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    }, 300);
   };
 
   const [lang, setLang] = useState<'en' | 'nl'>('en');
@@ -71,6 +76,23 @@ export default function JobDescriptionPage() {
     setLang(v);
     localStorage.setItem('aareon.lang', v);
   };
+
+  const STORAGE_KEY = 'jobDescriptionFormData';
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem('aareon.lang') as 'en' | 'nl' | null;
+    if (savedLang) setLang(savedLang);
+
+    const savedForm = localStorage.getItem(STORAGE_KEY);
+    if (savedForm) {
+      try {
+        setForm(JSON.parse(savedForm));
+      } catch {
+        // ignore malformed data
+      }
+    }
+  }, []);
 
   const S = STRINGS[lang];
 
