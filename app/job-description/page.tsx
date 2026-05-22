@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FieldLabel } from '@/components/basics/FieldLabel';
+import { SegmentedControl } from '@/components/basics/SegmentedControl';
 
 const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
 const CURRENT_STEP = 2;
@@ -19,6 +20,37 @@ const textareaClass =
   'text-[#172033] outline-none transition resize-vertical ' +
   'placeholder:text-gray-400 focus:border-[#172033]';
 
+const STRINGS = {
+  en: {
+    eyebrow: 'Job description · 2/4',
+    title: 'Create new job posting',
+    subtitle: 'Four steps — about 3 minutes',
+    aiBannerHint: 'Uses previous successful Aareon postings as a base.',
+    summary: 'Summary',
+    responsibilities: 'Responsibilities',
+    requirements: 'Requirements',
+    benefits: 'What we offer',
+    cancel: 'Cancel',
+    saveDraft: 'Save draft',
+    back: '← Back',
+    next: 'Next →',
+  },
+  nl: {
+    eyebrow: 'Functieomschrijving · 2/4',
+    title: 'Nieuwe vacature aanmaken',
+    subtitle: 'Vier stappen — ongeveer 3 minuten',
+    aiBannerHint: 'Gebruikt eerdere succesvolle Aareon-vacatures als basis.',
+    summary: 'Samenvatting',
+    responsibilities: 'Verantwoordelijkheden',
+    requirements: 'Vereisten',
+    benefits: 'Wat we bieden',
+    cancel: 'Annuleren',
+    saveDraft: 'Concept opslaan',
+    back: '← Terug',
+    next: 'Volgende →',
+  },
+} as const;
+
 export default function JobDescriptionPage() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>({
@@ -32,6 +64,16 @@ export default function JobDescriptionPage() {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
+  const [lang, setLang] = useState<'en' | 'nl'>('en');
+
+  const handleLangChange = (value: string) => {
+    const v = value as 'en' | 'nl';
+    setLang(v);
+    localStorage.setItem('aareon.lang', v);
+  };
+
+  const S = STRINGS[lang];
+
   return (
     <main className="min-h-screen" style={{ backgroundColor: 'var(--color-sand)', color: 'var(--color-body)' }}>
       <div className="mx-auto max-w-7xl px-8 py-8">
@@ -40,14 +82,24 @@ export default function JobDescriptionPage() {
         <div className="mb-10 flex items-start justify-between">
           <div>
             <p className="mb-1 text-sm" style={{ color: 'var(--color-body)' }}>
-              Job description · 2/4
+              {S.eyebrow}
             </p>
             <h1 className="text-5xl font-serif tracking-tight" style={{ color: 'var(--color-headline)' }}>
-              Create new job posting
+              {S.title}
             </h1>
             <p className="mt-3 text-lg" style={{ color: 'var(--color-body)' }}>
-              Four steps — about 3 minutes
+              {S.subtitle}
             </p>
+          </div>
+          <div className="mt-1">
+            <SegmentedControl
+              value={lang}
+              onChange={handleLangChange}
+              options={[
+                { label: 'EN', value: 'en' },
+                { label: 'NL', value: 'nl' },
+              ]}
+            />
           </div>
         </div>
 
@@ -105,7 +157,7 @@ export default function JobDescriptionPage() {
                   ✨ Draft with AI
                 </p>
                 <p className="text-xs" style={{ color: 'var(--color-body)' }}>
-                  Uses previous successful Aareon postings as a base.
+                  {S.aiBannerHint}
                 </p>
               </div>
               <button
@@ -119,7 +171,7 @@ export default function JobDescriptionPage() {
 
             {/* Summary */}
             <div>
-              <FieldLabel label="Summary" />
+              <FieldLabel label={S.summary} />
               <textarea
                 rows={3}
                 className={textareaClass}
@@ -130,7 +182,7 @@ export default function JobDescriptionPage() {
 
             {/* Responsibilities */}
             <div>
-              <FieldLabel label="Responsibilities" />
+              <FieldLabel label={S.responsibilities} />
               <textarea
                 rows={5}
                 className={textareaClass}
@@ -142,7 +194,7 @@ export default function JobDescriptionPage() {
             {/* Requirements + What we offer — two columns */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <FieldLabel label="Requirements" />
+                <FieldLabel label={S.requirements} />
                 <textarea
                   rows={5}
                   className={textareaClass}
@@ -151,7 +203,7 @@ export default function JobDescriptionPage() {
                 />
               </div>
               <div>
-                <FieldLabel label="What we offer" />
+                <FieldLabel label={S.benefits} />
                 <textarea
                   rows={5}
                   className={textareaClass}
@@ -168,7 +220,7 @@ export default function JobDescriptionPage() {
             style={{ borderColor: 'var(--color-stone)', backgroundColor: 'var(--color-sand)' }}
           >
             <button type="button" className="text-sm font-medium" style={{ color: 'var(--color-body)' }}>
-              Cancel
+              {S.cancel}
             </button>
             <div className="flex flex-1 items-center justify-end gap-3">
               <button
@@ -176,7 +228,7 @@ export default function JobDescriptionPage() {
                 className="rounded-xl border bg-white px-5 py-3 font-medium transition hover:bg-gray-50"
                 style={{ borderColor: 'var(--color-stone)', color: 'var(--color-headline)' }}
               >
-                Save draft
+                {S.saveDraft}
               </button>
               <button
                 type="button"
@@ -184,14 +236,14 @@ export default function JobDescriptionPage() {
                 className="rounded-xl border bg-white px-5 py-3 font-medium transition hover:bg-gray-50"
                 style={{ borderColor: 'var(--color-stone)', color: 'var(--color-headline)' }}
               >
-                ← Back
+                {S.back}
               </button>
               <button
                 type="button"
                 className="rounded-xl px-5 py-3 font-medium text-white"
                 style={{ backgroundColor: 'var(--color-blue)' }}
               >
-                Next →
+                {S.next}
               </button>
             </div>
           </div>
