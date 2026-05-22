@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 
-const STEPS = ['Basics', 'Job description', 'Pipeline & team', 'Publish'];
+const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
 const CURRENT_STEP = 2;
 
 export default function JobDescriptionPage() {
