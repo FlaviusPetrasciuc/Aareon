@@ -239,9 +239,16 @@ export default function CreateJobPostingPage() {
                                     onChange={handleInputChange}
                                     options={[
                                         { label: '—', value: '' },
-                                        { label: 'Engineering', value: 'engineering' },
-                                        { label: 'Design', value: 'design' },
-                                        { label: 'Marketing', value: 'marketing' },
+                                        { label: 'Sales', value: 'sales' },
+                                        { label: 'Management', value: 'management' },
+                                        { label: 'Development', value: 'development' },
+                                        { label: 'Consultancy', value: 'consultancy' },
+                                        { label: 'Support', value: 'support' },
+                                        { label: 'Administration', value: 'administration' },
+                                        { label: 'Finance', value: 'finance' },
+                                        { label: 'Facility Management', value: 'facility_management' },
+                                        { label: 'HRM', value: 'hrm' },
+                                        { label: 'IT (systeembeheer)', value: 'it' },
                                     ]}
                                     style={{
                                         borderColor: getFieldError('department') ? '#FF7F62' : undefined
@@ -393,7 +400,8 @@ export default function CreateJobPostingPage() {
                                     { label: '—', value: '' },
                                     { label: 'HBO', value: 'hbo' },
                                     { label: 'WO', value: 'wo' },
-                                    { label: 'MBO', value: 'mbo' }
+                                    { label: 'MBO', value: 'mbo' },
+                                    { label: 'Not relevant', value: 'not_relevant' },
                                 ]}
                                 style={{
                                     borderColor: getFieldError('education') ? '#FF7F62' : undefined
