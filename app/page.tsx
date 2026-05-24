@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { AAREON_EMAIL_DOMAINS, isAllowedAareonEmail, normalizeEmail } from "@/lib/aareonAccess";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,26 +11,29 @@ export default function LoginPage() {
   const [touched, setTouched] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const isValid = /^[^\s@]+@(aareon\.nl|gmail\.com)$/.test(email);
+  const isValid = isAllowedAareonEmail(email);
   const showError = touched && !isValid;
+  const allowedDomains = AAREON_EMAIL_DOMAINS.map((domain) => `@${domain}`).join(" or ");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setTouched(true);
 
     if (!isValid) {
-      alert("Please enter a valid @aareon.nl or @gmail.com email address.");
+      alert(`Please enter a valid ${allowedDomains} email address.`);
 
       return;
-    };
+    }
     setLoading(true);
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
     localStorage.setItem("managerEmail", normalizedEmail);
+    localStorage.removeItem("aareonApprovalStatus");
     document.cookie = `aareon_session=${normalizedEmail}; path=/; max-age=86400`;
+    document.cookie = "aareon_approval=; path=/; max-age=0";
 
     await new Promise((r) => setTimeout(r, 900));
-    router.push("/basics");
+    router.push("/approval");
   }
 
   return (
@@ -85,7 +89,7 @@ export default function LoginPage() {
             Sign in to<br />your workspace
           </h2>
           <p className="text-sm text-aareon-body font-light mb-9 leading-relaxed font-body">
-            Enter your company email to continue.
+            Enter your Aareon corporate email to start the approval validation.
           </p>
 
           {loading && (
@@ -117,7 +121,7 @@ export default function LoginPage() {
                 type="email"
                 autoFocus
                 autoComplete="email"
-                placeholder="you@aareon.nl"
+                placeholder="you@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={() => setTouched(true)}
@@ -130,7 +134,7 @@ export default function LoginPage() {
               />
               {showError && (
                 <p className="font-body text-xs text-aareon-coral mt-1.5">
-                  Please enter a valid @aareon.nl or @gmail.com email address.
+                  Please enter a valid {allowedDomains} email address.
                 </p>
               )}
             </div>

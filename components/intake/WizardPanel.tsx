@@ -86,12 +86,14 @@ export function WizardPanel({ session, onAnswer }: WizardPanelProps) {
     ],
     handler: () => {},
     render: (props) => {
-      const { question, optionsJson, questionId } = props.args;
+      const question = props.args.question ?? "";
+      const questionId = props.args.questionId ?? "question";
+      const optionsJson = props.args.optionsJson ?? "[]";
 
       let options: OptionItem[] = [];
 
       try {
-        options = JSON.parse(optionsJson ?? "[]");
+        options = JSON.parse(optionsJson);
       } catch {
         options = [];
       }

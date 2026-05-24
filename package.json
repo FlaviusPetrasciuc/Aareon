@@ -12,10 +12,10 @@
   "dependencies": {
     "@ai-sdk/openai": "^3.0.63",
     "@anthropic-ai/sdk": "^0.57.0",
-    "@copilotkit/react-core": "^1.57.1",
-    "@copilotkit/react-ui": "^1.57.1",
+    "@copilotkit/react-core": "^1.57.4",
+    "@copilotkit/react-ui": "^1.57.4",
     "@copilotkit/runtime": "^1.57.1",
-    "@copilotkit/runtime-client-gql": "^1.57.1",
+    "@copilotkit/runtime-client-gql": "^1.57.4",
     "@copilotkit/shared": "^1.57.1",
     "@google/generative-ai": "^0.24.1",
     "@tailwindcss/typography": "^0.5.19",

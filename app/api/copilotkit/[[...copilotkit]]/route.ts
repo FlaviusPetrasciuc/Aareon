@@ -37,7 +37,6 @@ async function getRuntime(req: Request) {
     const openai = createOpenAI({
       apiKey,
       baseURL,
-      compatibility: 'compatible',
     });
 
     const defaultModel = process.env.OPENROUTER_API_KEY ? "anthropic/claude-3.5-sonnet" : "gpt-4o";
