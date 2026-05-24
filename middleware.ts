@@ -3,12 +3,13 @@ import type { NextRequest } from "next/server";
 
 // Pages that don't require authentication
 const PUBLIC_PATHS = ["/"];
+const APPROVAL_REQUIRED_PATHS = ["/intake"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public paths through
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+  if (PUBLIC_PATHS.includes(pathname)) {
     return NextResponse.next();
   }
 
@@ -28,6 +29,11 @@ export function middleware(request: NextRequest) {
   const isLoggedIn = request.cookies.get("aareon_session");
   if (!isLoggedIn) {
     return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  const hasApproval = request.cookies.get("aareon_approval")?.value === "granted";
+  if (APPROVAL_REQUIRED_PATHS.some((p) => pathname.startsWith(p)) && !hasApproval) {
+    return NextResponse.redirect(new URL("/approval", request.url));
   }
 
   return NextResponse.next();
