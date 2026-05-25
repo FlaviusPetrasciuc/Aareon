@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isAllowedAareonEmail } from "@/lib/aareonAccess";
+import LoadingSpinner from "@/components/globals/loadingSpinner";
 
 const approvalTemplateUrl = "/documents/Approval%20Directors%20from%20for%20managers.pdf";
 
@@ -34,7 +35,7 @@ export default function ApprovalValidationPage() {
     if (nextChoice === "yes") {
       setShowApprovalModal(false);
       document.cookie = "aareon_approval=granted; path=/; max-age=86400";
-      router.push("/intake");
+
       return;
     }
 
@@ -45,7 +46,7 @@ export default function ApprovalValidationPage() {
   function continueToIntake() {
     if (choice !== "yes") return;
 
-    router.push("/intake");
+    router.push("/basics");
   }
 
   return (
@@ -181,7 +182,7 @@ export default function ApprovalValidationPage() {
             >
               Continue to AI Intake
             </button>
-
+            
             <a
               href={approvalTemplateUrl}
               target="_blank"

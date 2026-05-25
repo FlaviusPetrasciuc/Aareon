@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AAREON_EMAIL_DOMAINS, isAllowedAareonEmail, normalizeEmail } from "@/lib/aareonAccess";
+import LoadingSpinner from "@/components/globals/loadingSpinner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -92,21 +93,7 @@ export default function LoginPage() {
             Enter your Aareon corporate email to start the approval validation.
           </p>
 
-          {loading && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-              <div className="bg-white rounded-xl p-8 flex flex-col items-center gap-4 shadow-xl">
-                <div className="w-12 h-12 border-4 border-aareon-stone border-t-aareon-bright rounded-full animate-spin" />
-
-                <p className="text-aareon-headline font-body text-lg">
-                  Redirecting you to the next page...
-                </p>
-
-                <p className="text-aareon-body/60 text-sm">
-                  Please wait, this will only take a moment
-                </p>
-              </div>
-            </div>
-          )}
+          <LoadingSpinner isVisible={loading} />
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="mb-5">
