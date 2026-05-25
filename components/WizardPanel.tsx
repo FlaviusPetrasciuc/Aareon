@@ -91,13 +91,9 @@ export function WizardPanel({ session, onAnswer }: WizardPanelProps) {
       let options: OptionItem[] = [];
 
       try {
-        options = JSON.parse(optionsJson ?? "[]");
+        options = JSON.parse(String(optionsJson ?? "[]"));
       } catch {
         options = [];
-      }
-
-      if (!question || !questionId) {
-        return null;
       }
 
       return (
@@ -118,7 +114,7 @@ export function WizardPanel({ session, onAnswer }: WizardPanelProps) {
                 key={opt.id}
                 title={opt.title}
                 description={opt.description}
-                onClick={() => onAnswer(questionId, question, opt.title)}
+            onClick={() => onAnswer(questionId ?? "", question ?? "", opt.title)}
               />
             ))}
           </div>

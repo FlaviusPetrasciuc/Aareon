@@ -5,13 +5,8 @@ import { useCopilotAction, useCopilotChat } from "@copilotkit/react-core";
 import { MessageRole, TextMessage } from "@copilotkit/runtime-client-gql";
 import { CopilotChat } from "@copilotkit/react-ui";
 
-<<<<<<< HEAD
-import { WizardPanel } from "@/components/WizardPanel";
-import { JDPreviewPanel } from "@/components/JDPreviewPanel";
-=======
 import { WizardPanel } from "@/components/intake/WizardPanel";
 import { JDPreviewPanel } from "@/components/intake/JDPreviewPanel";
->>>>>>> 28cc8d440fea27fb842f2761be544d5f3ddba4b8
 
 import { IntakeSession } from "@/types/intake";
 
