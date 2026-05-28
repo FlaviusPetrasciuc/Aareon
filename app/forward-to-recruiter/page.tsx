@@ -61,7 +61,7 @@ export default function ForwardToRecruiterPage() {
                     ${active
                       ? 'border-[#14213d] bg-[#14213d] text-white'
                       : done
-                        ? 'border-[#14213d] bg-white text-[#14213d]'
+                        ? 'border-[#16a34a] bg-[#16a34a] text-white'
                         : 'border-[#d6d3d1] bg-white text-gray-500'
                     }
                   `}>
