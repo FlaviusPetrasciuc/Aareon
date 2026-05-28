@@ -7,6 +7,7 @@ import { Input } from '@/components/basics/Input';
 import { FieldLabel } from '@/components/basics/FieldLabel';
 import { Select } from '@/components/basics/Select';
 import { SegmentedControl } from '@/components/basics/SegmentedControl';
+import { Textarea } from '@/components/basics/Textarea';
 
 interface FormData {
     jobTitle: string;
@@ -19,8 +20,10 @@ interface FormData {
     companyCar: boolean;
     companyPhone: boolean;
     currency: string;
+    bonusStructure: string;
     education: string;
-    template: string;
+    mustHaves: string;
+    niceToHaves: string;
 }
 
 interface FieldError {
@@ -53,8 +56,10 @@ export default function CreateJobPostingPage() {
         companyCar: false,
         companyPhone: false,
         currency: 'EUR',
+        bonusStructure: '',
         education: '',
-        template: '',
+        mustHaves: '',
+        niceToHaves: '',
     });
 
     // Load saved data from localStorage
@@ -102,13 +107,17 @@ export default function CreateJobPostingPage() {
             newErrors.push({ field: 'education', message: 'Education level is required' });
         }
 
+        if (!formData.mustHaves && !formData.niceToHaves) {
+            newErrors.push({ field: 'employeeRequirements', message: "Employee requirements are required" });
+        }
+
         setErrors(newErrors);
         return newErrors.length === 0;
     };
 
     const handleNext = async () => {
         const isValid = validateInput();
-        
+
         if (!isValid) {
             const firstErrorField = document.querySelector('[data-error-field]');
 
@@ -120,22 +129,22 @@ export default function CreateJobPostingPage() {
         }
 
         saveToLocalStorage(formData);
-        
+
         console.log('Form data saved and navigating:', formData);
-        router.push('/intake');
+        router.push('/job-description');
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
-        
+
         setErrors(prev => prev.filter(error => error.field !== name));
-        
+
         let newValue: any = value;
 
         if (type === 'checkbox') {
             newValue = (e.target as HTMLInputElement).checked;
         }
-        
+
         setFormData(prev => {
             const updatedData = { ...prev, [name]: newValue };
 
@@ -264,14 +273,20 @@ export default function CreateJobPostingPage() {
                             {/* Location */}
                             <div data-error-field={getFieldError('location') ? 'location' : undefined}>
                                 <FieldLabel label="Location" required />
-                                <Input
+                                <Select
                                     name="location"
                                     value={formData.location}
                                     onChange={handleInputChange}
-                                    placeholder="City, country"
-                                    style={{
-                                        borderColor: getFieldError('location') ? '#FF7F62' : undefined
-                                    }}
+                                    options={[
+                                        { label: "—", value: '' },
+                                        { label: "Emmen", value: 'emmen' },
+                                        { label: "Groningen", value: 'groningen' },
+                                        { label: "Amersfoort", value: 'amersfoort' },
+                                        { label: "Enschede", value: 'enschede' },
+                                        { label: "Oosterhout", value: 'oosterhout' },
+                                        { label: "Utrecht", value: 'utrecht' },
+                                        { label: "Roermond", value: 'roermond' },
+                                    ]}
                                 />
                                 {getFieldError('location') && (
                                     <p className="mt-1 text-sm" style={{ color: 'var(--color-coral)' }}>
@@ -328,7 +343,7 @@ export default function CreateJobPostingPage() {
                                 <FieldLabel label="Salary range (monthly)" />
                                 <div className="flex items-center gap-3">
                                     <div className="relative w-28">
-                                        <div className="h-12 w-full appearance-none rounded-xl border bg-white px-4 text-sm outline-none transition flex items-center justify-center" 
+                                        <div className="h-12 w-full appearance-none rounded-xl border bg-white px-4 text-sm outline-none transition flex items-center justify-center"
                                             style={{ borderColor: 'var(--color-stone)' }}>
                                             {formData.currency}
                                         </div>
@@ -363,7 +378,7 @@ export default function CreateJobPostingPage() {
                                             checked={formData.companyCar}
                                             onChange={handleInputChange}
                                             className="w-6 h-6 rounded-xl focus:ring-offset-0"
-                                            style={{ 
+                                            style={{
                                                 borderColor: 'var(--color-stone)',
                                                 color: 'var(--color-bright)'
                                             }}
@@ -378,7 +393,7 @@ export default function CreateJobPostingPage() {
                                             checked={formData.companyPhone}
                                             onChange={handleInputChange}
                                             className="w-6 h-6 rounded focus:ring-offset-0"
-                                            style={{ 
+                                            style={{
                                                 borderColor: 'var(--color-stone)',
                                                 color: 'var(--color-bright)'
                                             }}
@@ -388,6 +403,15 @@ export default function CreateJobPostingPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Bonus Structure */}
+                        <FieldLabel label='Bonus Structure' />
+                        <Input
+                            name='bonusStructure'
+                            value={formData.bonusStructure}
+                            onChange={handleInputChange}
+                            placeholder='e.g. 70/30 Rekening (Sales Department), Standard Bonus (Other Departments)'
+                        />
 
                         {/* Education level */}
                         <div data-error-field={getFieldError('education') ? 'education' : undefined}>
@@ -414,50 +438,70 @@ export default function CreateJobPostingPage() {
                             )}
                         </div>
 
-                        {/* Template */}
-                        <div>
-                            <FieldLabel label="Start from template (optional)" />
-                            <Select
-                                name="template"
-                                value={formData.template}
-                                onChange={handleInputChange}
-                                options={[
-                                    { label: '—', value: '' },
-                                    { label: 'Frontend Engineer', value: 'frontend' },
-                                    { label: 'Backend Engineer', value: 'backend' },
-                                ]}
-                            />
-                        </div>
-                    </div>
+                        {/* Employee Requirements */}
+                        <div className="space-y-2">
+                            <FieldLabel label="Employee Requirements" />
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <div data-error-field={getFieldError('mustHaves') ? 'mustHaves' : undefined}>
+                                    <FieldLabel label="Must have" required />
+                                    <Textarea
+                                        name="mustHaves"
+                                        value={formData.mustHaves}
+                                        onChange={handleInputChange}
+                                        placeholder="e.g. Experience in Sales, soft skills, fluent in Dutch and English etc."
+                                        style={{
+                                            borderColor: getFieldError('mustHaves') ? '#FF7F62' : undefined
+                                        }}
+                                    />
+                                    {getFieldError('mustHave') && (
+                                        <p className="mt-1 text-sm" style={{ color: 'var(--color-coral)' }}>
+                                            {getFieldError('mustHave')}
+                                        </p>
+                                    )}
+                                </div>
 
-                    {/* Footer */}
-                    <div className="flex items-center justify-between border-t px-8 py-6" 
-                        style={{ borderColor: 'var(--color-stone)', backgroundColor: 'var(--color-sand)' }}>
-                        {errors.length > 0 && (
-                            <div className="flex items-center gap-2">
-                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ color: 'var(--color-coral)' }}>
-                                    <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/>
-                                    <path d="M10 6V10M10 14H10.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                                </svg>
-                                <span className="text-sm" style={{ color: 'var(--color-coral)' }}>
-                                    Please fill in all required fields
-                                </span>
+                                <div data-error-field={getFieldError('niceToHaves') ? 'niceToHaves' : undefined}>
+                                    <FieldLabel label="Nice-to have" required />
+                                    <Textarea
+                                        name="niceToHaves"
+                                        value={formData.niceToHaves}
+                                        onChange={handleInputChange}
+                                        placeholder="e.g. Knowledge in economics, experience with C++ etc."
+                                        style={{
+                                            borderColor: getFieldError('niceToHave') ? '#FF7F62' : undefined
+                                        }}
+                                    />
+                                    {getFieldError('niceToHave') && (
+                                        <p className="mt-1 text-sm" style={{ color: 'var(--color-coral)' }}>
+                                            {getFieldError('niceToHave')}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                        )}
-                        <div className="flex items-center gap-3 ml-auto">
-                            <button 
-                                onClick={() => saveToLocalStorage(formData)}
-                                className="rounded-xl border bg-white px-5 py-3 font-medium transition hover:bg-gray-50"
-                                style={{ borderColor: 'var(--color-stone)', color: 'var(--color-headline)' }}>
-                                Save draft
-                            </button>
+                        </div>
 
-                            <button
-                                onClick={handleNext}
-                                className="rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
-                                style={{ backgroundColor: 'var(--color-bright)' }}>
-                                Next →
-                            </button>
+                        {/* Footer */}
+                        <div className="flex items-center justify-between border-t px-8 py-6"
+                            style={{ borderColor: 'var(--color-stone)', backgroundColor: 'var(--color-sand)' }}>
+                            {errors.length > 0 && (
+                                <div className="flex items-center gap-2">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ color: 'var(--color-coral)' }}>
+                                        <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" />
+                                        <path d="M10 6V10M10 14H10.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                    </svg>
+                                    <span className="text-sm" style={{ color: 'var(--color-coral)' }}>
+                                        Please fill in all required fields
+                                    </span>
+                                </div>
+                            )}
+                            <div className="flex items-center gap-3 ml-auto">
+                                <button
+                                    onClick={handleNext}
+                                    className="rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
+                                    style={{ backgroundColor: 'var(--color-bright)' }}>
+                                    Next →
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
