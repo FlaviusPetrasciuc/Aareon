@@ -131,7 +131,7 @@ export default function CreateJobPostingPage() {
         saveToLocalStorage(formData);
 
         console.log('Form data saved and navigating:', formData);
-        router.push('/intake');
+        router.push('/job-description');
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
