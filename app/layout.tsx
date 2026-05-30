@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter, IBM_Plex_Mono } from "next/font/google";
-import { CopilotKit } from "@copilotkit/react-core";
-import Link from "next/link";
-import "@copilotkit/react-ui/styles.css";
 import "./globals.css";
 
 const playfair = Playfair_Display({ 
@@ -34,10 +31,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable} ${mono.variable}`}>
-      <body className="bg-aareon-sand font-body text-aareon-body antialiased">  
-        <CopilotKit runtimeUrl="/api/copilotkit">
-          {children}
-        </CopilotKit>
+      <body className="bg-aareon-sand font-body text-aareon-body antialiased">
+        {children}
       </body>
     </html>
   );
