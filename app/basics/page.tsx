@@ -8,6 +8,7 @@ import { FieldLabel } from '@/components/basics/FieldLabel';
 import { Select } from '@/components/basics/Select';
 import { SegmentedControl } from '@/components/basics/SegmentedControl';
 import { Textarea } from '@/components/basics/Textarea';
+import Navbar from '@/components/globals/Navbar';
 
 interface FormData {
     jobTitle: string;
@@ -157,6 +158,8 @@ export default function CreateJobPostingPage() {
     };
 
     return (
+        <>
+        <Navbar />
         <main className="min-h-screen" style={{ backgroundColor: 'var(--color-sand)', color: 'var(--color-body)' }}>
             <div className="mx-auto max-w-7xl px-8 py-8">
                 {/* Header */}
@@ -507,5 +510,6 @@ export default function CreateJobPostingPage() {
                 </div>
             </div>
         </main>
+        </>
     );
 }

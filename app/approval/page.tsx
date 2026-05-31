@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isAllowedAareonEmail } from "@/lib/aareonAccess";
 import LoadingSpinner from "@/components/globals/loadingSpinner";
+import Navbar from "@/components/globals/Navbar";
 
 const approvalTemplateUrl = "/documents/Approval%20Directors%20from%20for%20managers.pdf";
 
@@ -51,18 +50,7 @@ export default function ApprovalValidationPage() {
 
   return (
     <main className="min-h-screen bg-aareon-sand text-aareon-body">
-      <header className="border-b border-aareon-stone bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-          <Link href="/" className="flex items-center gap-3 rounded-md focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2">
-            <Image src="/aareon-logo.png" alt="Aareon" width={126} height={30} priority />
-          </Link>
-
-          <div className="hidden items-center gap-3 text-xs font-medium text-aareon-body/70 sm:flex">
-            <span className="h-2 w-2 rounded-full bg-aareon-bright" aria-hidden="true" />
-            <span>{managerEmail || "Validating session"}</span>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <section className="mx-auto max-w-5xl px-5 py-8 sm:px-8 lg:py-14">
         <div className="min-w-0">
