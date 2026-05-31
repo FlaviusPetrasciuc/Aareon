@@ -5,17 +5,24 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isAllowedAareonEmail } from "@/lib/aareonAccess";
-import LoadingSpinner from "@/components/globals/loadingSpinner";
 
 const approvalTemplateUrl = "/documents/Approval%20Directors%20from%20for%20managers.pdf";
 
 type ApprovalChoice = "yes" | "no" | null;
+
+type StoredApprovalFile = {
+  fileName: string;
+  contentType: string;
+  base64: string;
+};
 
 export default function ApprovalValidationPage() {
   const router = useRouter();
   const [managerEmail, setManagerEmail] = useState("");
   const [choice, setChoice] = useState<ApprovalChoice>(null);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [approvalFileName, setApprovalFileName] = useState("");
+  const [approvalFileError, setApprovalFileError] = useState("");
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("managerEmail") || "";
@@ -35,7 +42,6 @@ export default function ApprovalValidationPage() {
     if (nextChoice === "yes") {
       setShowApprovalModal(false);
       document.cookie = "aareon_approval=granted; path=/; max-age=86400";
-
       return;
     }
 
@@ -45,15 +51,50 @@ export default function ApprovalValidationPage() {
 
   function continueToIntake() {
     if (choice !== "yes") return;
-
     router.push("/basics");
+  }
+
+  async function handleApprovalFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+
+    setApprovalFileError("");
+    setApprovalFileName("");
+    localStorage.removeItem("aareonApprovalPdf");
+
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      e.target.value = "";
+      setApprovalFileError("Please upload a PDF file only.");
+      return;
+    }
+
+    const buffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+
+    const storedFile: StoredApprovalFile = {
+      fileName: file.name,
+      contentType: file.type,
+      base64: btoa(binary),
+    };
+
+    localStorage.setItem("aareonApprovalPdf", JSON.stringify(storedFile));
+    setApprovalFileName(file.name);
   }
 
   return (
     <main className="min-h-screen bg-aareon-sand text-aareon-body">
       <header className="border-b border-aareon-stone bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-          <Link href="/" className="flex items-center gap-3 rounded-md focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2">
+          <Link
+            href="/"
+            className="flex items-center gap-3 rounded-md focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2"
+          >
             <Image src="/aareon-logo.png" alt="Aareon" width={126} height={30} priority />
           </Link>
 
@@ -78,17 +119,20 @@ export default function ApprovalValidationPage() {
             <p className="mb-4 font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-aareon-bright">
               Approval checkpoint
             </p>
+
             <h1 className="font-title text-[clamp(38px,6vw,68px)] italic leading-[1.02] text-aareon-headline">
-              Confirm management approval before creating a new vacancy.
+              Confirm director approval before creating a new vacancy.
             </h1>
+
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-aareon-body sm:mx-0">
-              Aareon requires director or management approval before a manager can request a new job posting and start a hiring process. Confirm your status below to continue.
+              Aareon requires director approval before a manager can request a new job posting and start a hiring process.
+              Confirm your approval status below to continue.
             </p>
           </div>
 
           <fieldset className="mx-auto mt-10 max-w-4xl">
             <legend className="mb-4 text-center text-sm font-semibold text-aareon-headline sm:text-left">
-              Do you already have the required approval?
+              Do you already have approval from the directors?
             </legend>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -109,13 +153,17 @@ export default function ApprovalValidationPage() {
                   onChange={() => selectApprovalStatus("yes")}
                   className="sr-only"
                 />
+
                 <span className="flex items-start justify-between gap-5">
                   <span>
-                    <span className="block text-lg font-semibold text-aareon-headline">Yes, approval is in place</span>
+                    <span className="block text-lg font-semibold text-aareon-headline">
+                      Yes, approval is already available
+                    </span>
                     <span className="mt-2 block text-sm leading-6 text-aareon-body/75">
-                      Continue to the AI intake and answer the required hiring and vacancy questions.
+                      Continue to the AI interviewer and answer the vacancy intake questions.
                     </span>
                   </span>
+
                   <span
                     className={[
                       "mt-0.5 h-6 w-6 shrink-0 rounded-full border transition-all duration-300",
@@ -124,9 +172,7 @@ export default function ApprovalValidationPage() {
                         : "border-aareon-stone bg-white group-hover:border-aareon-bright",
                     ].join(" ")}
                     aria-hidden="true"
-                  >
-                    <span className="sr-only">Selected</span>
-                  </span>
+                  />
                 </span>
               </label>
 
@@ -150,13 +196,17 @@ export default function ApprovalValidationPage() {
                   onChange={() => selectApprovalStatus("no")}
                   className="sr-only"
                 />
+
                 <span className="flex items-start justify-between gap-5">
                   <span>
-                    <span className="block text-lg font-semibold text-aareon-headline">No, I Need Approval First</span>
+                    <span className="block text-lg font-semibold text-aareon-headline">
+                      No, I need to request approval first
+                    </span>
                     <span className="mt-2 block text-sm leading-6 text-aareon-body/75">
-                      Access to the AI job posting workflow stays locked until approval is obtained.
+                      Complete the approval request form first. The AI interviewer will remain closed until this request is submitted.
                     </span>
                   </span>
+
                   <span
                     className={[
                       "mt-0.5 h-6 w-6 shrink-0 rounded-full border transition-all duration-300",
@@ -165,13 +215,39 @@ export default function ApprovalValidationPage() {
                         : "border-aareon-stone bg-white group-hover:border-aareon-bright",
                     ].join(" ")}
                     aria-hidden="true"
-                  >
-                    <span className="sr-only">Selected</span>
-                  </span>
+                  />
                 </span>
               </label>
             </div>
           </fieldset>
+
+          {choice === "yes" && (
+            <div className="mx-auto mt-6 max-w-4xl rounded-lg border border-aareon-stone bg-white p-5 shadow-sm">
+              <label htmlFor="approvalPdf" className="block text-sm font-semibold text-aareon-headline">
+                Add approval PDF
+              </label>
+
+              <p className="mt-1 text-sm leading-6 text-aareon-body/70">
+                Optional. If you add the approval document, it will be sent together with the confirmation email.
+              </p>
+
+              <input
+                id="approvalPdf"
+                type="file"
+                accept="application/pdf,.pdf"
+                onChange={handleApprovalFileChange}
+                className="mt-4 block w-full rounded-lg border border-aareon-stone bg-aareon-sand px-4 py-3 text-sm text-aareon-body file:mr-4 file:rounded-md file:border-0 file:bg-aareon-blue file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+              />
+
+              {approvalFileName && (
+                <p className="mt-2 text-xs font-medium text-aareon-bright">{approvalFileName}</p>
+              )}
+
+              {approvalFileError && (
+                <p className="mt-2 text-xs font-semibold text-aareon-coral">{approvalFileError}</p>
+              )}
+            </div>
+          )}
 
           <div className="mx-auto mt-8 flex max-w-4xl flex-col gap-3 sm:flex-row sm:justify-center">
             <button
@@ -180,16 +256,16 @@ export default function ApprovalValidationPage() {
               disabled={choice !== "yes"}
               className="inline-flex min-h-12 items-center justify-center rounded-lg bg-aareon-blue px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a1d8a] hover:shadow-[0_12px_24px_rgba(5,17,99,0.18)] focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-aareon-body/30 disabled:shadow-none"
             >
-              Continue to AI Intake
+              Continue to AI interviewer
             </button>
-            
+
             <a
               href={approvalTemplateUrl}
               target="_blank"
               rel="noreferrer"
               className="inline-flex min-h-12 items-center justify-center rounded-lg border border-aareon-stone bg-white px-6 py-3 text-sm font-semibold text-aareon-headline shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-aareon-bright hover:text-aareon-bright hover:shadow-[0_10px_24px_rgba(8,19,38,0.06)] focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2"
             >
-              Preview Approval Document
+              View approval document example
             </a>
           </div>
         </div>
@@ -204,18 +280,21 @@ export default function ApprovalValidationPage() {
         >
           <div className="w-full max-w-lg rounded-lg border border-aareon-stone bg-white p-6 text-center shadow-[0_24px_80px_rgba(8,19,38,0.22)] animate-[modalIn_220ms_ease-out] sm:p-8">
             <div className="mx-auto mb-5 h-1 w-16 rounded-full bg-aareon-bright" aria-hidden="true" />
+
             <h2 id="approval-required-title" className="text-2xl font-semibold text-aareon-headline">
-              Approval is required before continuing.
+              Approval is required before you can continue.
             </h2>
+
             <p className="mt-4 text-sm leading-6 text-aareon-body/78">
-              Please complete the official approval template and obtain the required director or management decision. The AI job posting workflow will become available once you return and confirm that approval has been granted.
+              Please complete the approval request form first. The recruiter will receive your request and guide the next approval steps with the directors.
             </p>
+
             <button
               type="button"
-              onClick={() => setShowApprovalModal(false)}
+              onClick={() => router.push("/approval-request")}
               className="mt-7 inline-flex min-h-11 items-center justify-center rounded-lg bg-aareon-blue px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a1d8a] hover:shadow-[0_12px_24px_rgba(5,17,99,0.18)] focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2"
             >
-              OK
+              Continue
             </button>
           </div>
         </div>

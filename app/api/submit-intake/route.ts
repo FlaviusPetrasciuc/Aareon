@@ -12,6 +12,11 @@ type SubmitBody = {
   managerEmail: string;
   jobTitle: string;
   answers: Answer[];
+  approvalPdf?: {
+    fileName: string;
+    contentType: string;
+    base64: string;
+  };
 };
 
 async function createPdfBuffer(data: SubmitBody): Promise<Buffer> {
@@ -91,6 +96,10 @@ export async function POST(req: NextRequest) {
       managerEmail: normalizedEmail,
     });
 
+    const approvalPdfBuffer = body.approvalPdf?.base64
+      ? Buffer.from(body.approvalPdf.base64, "base64")
+      : null;
+
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
@@ -102,19 +111,29 @@ export async function POST(req: NextRequest) {
     });
 
     const fileName = `intake-${body.jobTitle.replace(/\s+/g, "-")}.pdf`;
+    const attachments = [
+      {
+        filename: fileName,
+        content: pdfBuffer,
+        contentType: "application/pdf",
+      },
+      ...(approvalPdfBuffer
+        ? [
+            {
+              filename: body.approvalPdf?.fileName || "director-approval.pdf",
+              content: approvalPdfBuffer,
+              contentType: body.approvalPdf?.contentType || "application/pdf",
+            },
+          ]
+        : []),
+    ];
 
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: normalizedEmail,
       subject: `Confirmation: Intake submitted for ${body.jobTitle}`,
       text: `Thank you. Your intake for ${body.jobTitle} was submitted successfully. The PDF with your questions and answers is attached.`,
-      attachments: [
-        {
-          filename: fileName,
-          content: pdfBuffer,
-          contentType: "application/pdf",
-        },
-      ],
+      attachments,
     });
 
     await transporter.sendMail({
@@ -127,13 +146,7 @@ Manager email: ${normalizedEmail}
 Job title: ${body.jobTitle}
 
 The PDF with questions and answers is attached.`,
-      attachments: [
-        {
-          filename: fileName,
-          content: pdfBuffer,
-          contentType: "application/pdf",
-        },
-      ],
+      attachments,
     });
 
     return NextResponse.json({ success: true });
