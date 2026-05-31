@@ -32,6 +32,9 @@ export function WizardPanel({ session, onAnswer }: WizardPanelProps) {
     setIsSubmitting(true);
 
     try {
+      const approvalPdfRaw = localStorage.getItem("aareonApprovalPdf");
+      const approvalPdf = approvalPdfRaw ? JSON.parse(approvalPdfRaw) : undefined;
+
       const res = await fetch("/api/submit-intake", {
         method: "POST",
         headers: {
@@ -41,6 +44,7 @@ export function WizardPanel({ session, onAnswer }: WizardPanelProps) {
           managerEmail: session.managerEmail,
           jobTitle: session.jobTitle,
           answers: session.answers,
+          approvalPdf,
         }),
       });
 
