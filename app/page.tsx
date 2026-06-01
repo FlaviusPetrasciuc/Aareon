@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AAREON_EMAIL_DOMAINS, isAllowedAareonEmail, normalizeEmail } from "@/lib/aareonAccess";
-import LoadingSpinner from "@/components/globals/loadingSpinner";
+import LoadingSpinner from "@/components/globals/LoadingSpinner";
 
 export default function LoginPage() {
   const router = useRouter();
