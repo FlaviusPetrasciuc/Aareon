@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Navbar from '@/components/globals/Navbar';
 
 const STEPS = [
     'Basics',
@@ -25,6 +26,8 @@ export default function Overview() {
     };
 
     return (
+        <>
+        <Navbar />
         <main className="min-h-screen bg-[#f7f6f3] text-[#1f2937]">
             <div className="mx-auto max-w-7xl px-8 py-8">
                 {/* Header */}
@@ -192,5 +195,6 @@ export default function Overview() {
                 </div>
             </div>
         </main>
+        </>
     );
 }

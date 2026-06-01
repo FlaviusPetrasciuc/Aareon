@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FieldLabel } from '@/components/basics/FieldLabel';
 import { SegmentedControl } from '@/components/basics/SegmentedControl';
+import Navbar from '@/components/globals/Navbar';
 
 const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
 const CURRENT_STEP = 2;
@@ -93,6 +94,8 @@ export default function JobDescriptionPage() {
   const S = STRINGS[lang];
 
   return (
+    <>
+    <Navbar />
     <main className="min-h-screen" style={{ backgroundColor: 'var(--color-sand)', color: 'var(--color-body)' }}>
       <div className="mx-auto max-w-7xl px-8 py-8">
 
@@ -264,5 +267,6 @@ export default function JobDescriptionPage() {
 
       </div>
     </main>
+    </>
   );
 }

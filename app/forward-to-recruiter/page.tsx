@@ -6,6 +6,7 @@ import { getSession } from '@/lib/session';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { IntakeSession } from '@/types/intake';
+import Navbar from '@/components/globals/Navbar';
 
 const STEPS = [
     'Basics',
@@ -31,6 +32,8 @@ export default function ForwardToRecruiterPage() {
     if (!session) return null;
 
     return (
+        <>
+        <Navbar />
         <main className="min-h-screen bg-[#f7f6f3] text-[#1f2937]">
             <div className="mx-auto max-w-7xl px-8 py-8">
 
@@ -95,5 +98,6 @@ export default function ForwardToRecruiterPage() {
 
             </div>
         </main>
+        </>
     );
 }

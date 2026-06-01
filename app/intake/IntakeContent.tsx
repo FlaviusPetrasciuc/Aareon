@@ -8,6 +8,7 @@ import { CopilotChat } from "@copilotkit/react-ui";
 import { WizardPanel } from "@/components/intake/WizardPanel";
 import { JDPreviewPanel } from "@/components/intake/JDPreviewPanel";
 import { isAllowedAareonEmail } from "@/lib/aareonAccess";
+import Navbar from "@/components/globals/Navbar";
 
 import { IntakeSession } from "@/types/intake";
 
@@ -149,7 +150,9 @@ export default function IntakeContent() {
   };
 
   return (
-    <main className="relative flex h-screen w-full overflow-hidden bg-aareon-sand">
+    <>
+    <Navbar />
+    <main className="relative flex h-[calc(100vh-62px)] w-full overflow-hidden bg-aareon-sand">
 
       <div
         className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none"
@@ -236,28 +239,7 @@ RULES:
         </div>
       </div>
 
-      {/* Logo */}
-      <div className="fixed left-8 top-8 z-20">
-
-        <div className="flex items-center gap-4">
-
-          <div className="flex h-12 w-12 items-center justify-center bg-aareon-headline text-white font-black text-2xl italic border-b-4 border-r-4 border-aareon-bright">
-            A
-          </div>
-
-          <div className="space-y-0">
-
-            <h1 className="font-title text-2xl italic text-aareon-headline tracking-tighter leading-none">
-              Recruiter Intake
-            </h1>
-
-            <p className="font-mono text-[9px] uppercase tracking-[0.5em] text-aareon-bright font-bold">
-              Powered by Aareon AI
-            </p>
-
-          </div>
-        </div>
-      </div>
     </main>
+    </>
   );
 }
