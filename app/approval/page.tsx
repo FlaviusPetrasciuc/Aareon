@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isAllowedAareonEmail } from "@/lib/aareonAccess";
-import LoadingSpinner from "@/components/globals/loadingSpinner";
 
 const approvalTemplateUrl = "/documents/Approval%20Directors%20from%20for%20managers.pdf";
 
