@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { FieldLabel } from '@/components/basics/FieldLabel';
 import { SegmentedControl } from '@/components/basics/SegmentedControl';
 import Navbar from '@/components/globals/Navbar';
+import { useCopilotAction, useCopilotReadable, useCopilotChat } from '@copilotkit/react-core';
+import { TextMessage, Role } from '@copilotkit/runtime-client-gql';
 
 const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
 const CURRENT_STEP = 2;
@@ -60,8 +62,63 @@ export default function JobDescriptionPage() {
     requirements: '',
     benefits: '',
   });
+  const [isDrafting, setIsDrafting] = useState(false);
+  const [basicsData, setBasicsData] = useState<Record<string, unknown> | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('jobPostingFormData');
+    if (saved) {
+      try { setBasicsData(JSON.parse(saved)); } catch { /* ignore */ }
+    }
+  }, []);
+
+  useCopilotReadable({
+    description: "Job posting basics filled by the hiring manager: title, department, location, work mode, employment type, salary range, education requirements, must-haves, nice-to-haves, and additional details",
+    value: basicsData ?? {},
+  });
+
+  useCopilotAction({
+    name: "fillJobDescription",
+    description: "Fill the job description form fields with AI-generated content based on the job basics",
+    parameters: [
+      { name: "summary", type: "string", description: "2-3 sentence overview of the role and its impact at Aareon", required: true },
+      { name: "responsibilities", type: "string", description: "5-7 key responsibilities, each prefixed with '• ' on its own line", required: true },
+      { name: "requirements", type: "string", description: "5-6 required qualifications drawing from mustHaves and education, each prefixed with '• '", required: true },
+      { name: "benefits", type: "string", description: "4-5 benefits Aareon offers including salary range, each prefixed with '• '", required: true },
+    ],
+    handler: async ({ summary, responsibilities, requirements, benefits }) => {
+      setForm({ summary, responsibilities, requirements, benefits });
+      setIsDrafting(false);
+      localStorage.setItem('jobDescriptionFormData', JSON.stringify({ summary, responsibilities, requirements, benefits }));
+      return "Job description filled successfully";
+    },
+  });
+
+  const { appendMessage, runChatCompletion } = useCopilotChat();
+
+  const handleDraftWithAI = async () => {
+    if (!basicsData || isDrafting) return;
+    setIsDrafting(true);
+
+    const jobTitle = (basicsData as any).jobTitle || 'this role';
+    const salaryMin = (basicsData as any).salaryMin ?? '';
+    const salaryMax = (basicsData as any).salaryMax ?? '';
+    const currency = (basicsData as any).currency ?? 'EUR';
+    const salaryRange = salaryMin && salaryMax ? `${currency} ${salaryMin}–${salaryMax} per month` : '';
+
+    try {
+      appendMessage(new TextMessage({
+        id: crypto.randomUUID(),
+        role: Role.User,
+        content: `You are an expert HR copywriter for Aareon, a European PropTech and SaaS company. Using the job basics in your context, generate a professional job description for the ${jobTitle} position.\n\nCall the fillJobDescription action with:\n- summary: 2-3 sentences describing the role and its business impact\n- responsibilities: 5-7 bullet points of key duties (prefix each line with "• ")\n- requirements: 5-6 bullet points of qualifications (incorporate mustHaves and education level; prefix each with "• ")\n- benefits: 4-5 bullet points of what Aareon offers${salaryRange ? `, including salary range ${salaryRange}` : ''} (prefix each with "• ")\n\nWrite in a direct, professional tone. Do not respond with text — call the fillJobDescription action immediately.`,
+      }));
+      await runChatCompletion();
+    } catch {
+      setIsDrafting(false);
+    }
+  };
 
   const handleChange = (field: keyof FormState, value: string) => {
     const updated = { ...form, [field]: value };
@@ -183,10 +240,12 @@ export default function JobDescriptionPage() {
               </div>
               <button
                 type="button"
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
+                onClick={handleDraftWithAI}
+                disabled={isDrafting || !basicsData}
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: '#FF7F62' }}
               >
-                ✨ Draft with AI
+                {isDrafting ? 'Drafting…' : '✨ Draft with AI'}
               </button>
             </div>
 
