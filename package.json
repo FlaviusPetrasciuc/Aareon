@@ -10,6 +10,8 @@
     "test:ci": "jest --ci"
   },
   "dependencies": {
+    "@copilotkit/react-core": "^1.59.2",
+    "@copilotkit/runtime": "^1.59.2",
     "@tailwindcss/typography": "^0.5.19",
     "framer-motion": "^12.38.0",
     "hast-util-raw": "^9.1.0",
@@ -17,6 +19,7 @@
     "nanoid": "^5.0.7",
     "next": "^14.2.5",
     "nodemailer": "^8.0.7",
+    "openai": "^4.104.0",
     "pdf-lib": "^1.17.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
