@@ -8,6 +8,7 @@ import { FieldLabel } from '@/components/basics/FieldLabel';
 import { Select } from '@/components/basics/Select';
 import { SegmentedControl } from '@/components/basics/SegmentedControl';
 import { Textarea } from '@/components/basics/Textarea';
+import Navbar from '@/components/globals/Navbar';
 
 interface FormData {
     jobTitle: string;
@@ -24,6 +25,8 @@ interface FormData {
     education: string;
     mustHaves: string;
     niceToHaves: string;
+    shouldntHaves: string;
+    additionalDetails: string;
 }
 
 interface FieldError {
@@ -31,17 +34,17 @@ interface FieldError {
     message: string;
 }
 
-const steps = [
+const STEPS = [
     'Basics',
     'Job description',
     'Overview',
     'Forward to recruiter',
 ];
+const CURRENT_STEP = 1;
 
 const STORAGE_KEY = 'jobPostingFormData';
 
 export default function CreateJobPostingPage() {
-    const [currentStep] = useState(1);
     const [errors, setErrors] = useState<FieldError[]>([]);
     const router = useRouter();
 
@@ -60,6 +63,8 @@ export default function CreateJobPostingPage() {
         education: '',
         mustHaves: '',
         niceToHaves: '',
+        shouldntHaves: '',
+        additionalDetails: '',
     });
 
     // Load saved data from localStorage
@@ -107,7 +112,7 @@ export default function CreateJobPostingPage() {
             newErrors.push({ field: 'education', message: 'Education level is required' });
         }
 
-        if (!formData.mustHaves && !formData.niceToHaves) {
+        if (!formData.mustHaves) {
             newErrors.push({ field: 'employeeRequirements', message: "Employee requirements are required" });
         }
 
@@ -157,6 +162,8 @@ export default function CreateJobPostingPage() {
     };
 
     return (
+        <>
+        <Navbar />
         <main className="min-h-screen" style={{ backgroundColor: 'var(--color-sand)', color: 'var(--color-body)' }}>
             <div className="mx-auto max-w-7xl px-8 py-8">
                 {/* Header */}
@@ -178,36 +185,32 @@ export default function CreateJobPostingPage() {
 
                 {/* Stepper */}
                 <div className="mb-10 flex items-center">
-                    {steps.map((step, index) => {
+                    {STEPS.map((step, index) => {
                         const stepNumber = index + 1;
-                        const active = currentStep === stepNumber;
+                        const isDone = stepNumber < CURRENT_STEP;
+                        const isCurrent = stepNumber === CURRENT_STEP;
 
                         return (
                             <React.Fragment key={step}>
                                 <div className="flex items-center gap-3">
                                     <div
-                                        className={`
-                                            flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium
-                                            ${active ? 'border-none text-white' : 'border'}
-                                        `}
+                                        className="flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium"
                                         style={{
-                                            backgroundColor: active ? 'var(--color-blue)' : 'white',
-                                            borderColor: active ? 'var(--color-blue)' : 'var(--color-stone)',
-                                            color: active ? 'white' : 'var(--color-body)'
+                                            backgroundColor: isDone ? '#50B214' : isCurrent ? 'var(--color-blue)' : 'white',
+                                            borderColor: isDone ? '#50B214' : isCurrent ? 'var(--color-blue)' : 'var(--color-stone)',
+                                            color: isDone || isCurrent ? 'white' : 'var(--color-body)',
                                         }}
                                     >
-                                        {stepNumber}
+                                        {isDone ? '✓' : stepNumber}
                                     </div>
-
                                     <span
                                         className="text-[15px]"
-                                        style={{ color: active ? 'var(--color-headline)' : 'var(--color-body)' }}
+                                        style={{ color: isCurrent ? 'var(--color-headline)' : 'var(--color-body)' }}
                                     >
                                         {step}
                                     </span>
                                 </div>
-
-                                {index < steps.length - 1 && (
+                                {index < STEPS.length - 1 && (
                                     <div className="mx-5 h-px flex-1" style={{ backgroundColor: 'var(--color-stone)' }} />
                                 )}
                             </React.Fragment>
@@ -284,8 +287,10 @@ export default function CreateJobPostingPage() {
                                         { label: "Amersfoort", value: 'amersfoort' },
                                         { label: "Enschede", value: 'enschede' },
                                         { label: "Oosterhout", value: 'oosterhout' },
-                                        { label: "Utrecht", value: 'utrecht' },
+                                        { label: "Amsterdam", value: 'utrecht' },
                                         { label: "Roermond", value: 'roermond' },
+                                        { label: "Breda", value: 'breda' },
+                                        { label: "Sneek", value: 'sneek' },
                                     ]}
                                 />
                                 {getFieldError('location') && (
@@ -441,7 +446,7 @@ export default function CreateJobPostingPage() {
                         {/* Employee Requirements */}
                         <div className="space-y-2">
                             <FieldLabel label="Employee Requirements" />
-                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                 <div data-error-field={getFieldError('mustHaves') ? 'mustHaves' : undefined}>
                                     <FieldLabel label="Must have" required />
                                     <Textarea
@@ -460,24 +465,36 @@ export default function CreateJobPostingPage() {
                                     )}
                                 </div>
 
-                                <div data-error-field={getFieldError('niceToHaves') ? 'niceToHaves' : undefined}>
-                                    <FieldLabel label="Nice-to have" required />
+                                <div>
+                                    <FieldLabel label="Nice-to have" />
                                     <Textarea
                                         name="niceToHaves"
                                         value={formData.niceToHaves}
                                         onChange={handleInputChange}
                                         placeholder="e.g. Knowledge in economics, experience with C++ etc."
-                                        style={{
-                                            borderColor: getFieldError('niceToHave') ? '#FF7F62' : undefined
-                                        }}
                                     />
-                                    {getFieldError('niceToHave') && (
-                                        <p className="mt-1 text-sm" style={{ color: 'var(--color-coral)' }}>
-                                            {getFieldError('niceToHave')}
-                                        </p>
-                                    )}
+                                </div>
+
+                                <div>
+                                    <FieldLabel label="Shouldn't have" />
+                                    <Textarea
+                                        name="shouldntHaves"
+                                        value={formData.shouldntHaves}
+                                        onChange={handleInputChange}
+                                        placeholder="e.g. Difficulty working in a team, unwillingness to offer help etc."
+                                    />
                                 </div>
                             </div>
+                        </div>
+
+                        <div>
+                            <FieldLabel label="Additional Details" />
+                            <Input
+                                name="jobTitle"
+                                value={formData.additionalDetails}
+                                onChange={handleInputChange}
+                                placeholder="e.g. Mention the working culture, what a day in the life of someone in this position looks like etc."
+                            />
                         </div>
 
                         {/* Footer */}
@@ -507,5 +524,6 @@ export default function CreateJobPostingPage() {
                 </div>
             </div>
         </main>
+        </>
     );
 }
