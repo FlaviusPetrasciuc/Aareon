@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 // Pages that don't require authentication
 const PUBLIC_PATHS = ["/"];
-const APPROVAL_REQUIRED_PATHS = ["/intake"];
+const APPROVAL_REQUIRED_PATHS = ["/basics", "/job-description", "/overview", "/forward-to-recruiter"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
