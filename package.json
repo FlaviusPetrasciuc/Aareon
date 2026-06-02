@@ -10,6 +10,7 @@
     "test:ci": "jest --ci"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.57.0",
     "@copilotkit/react-core": "^1.59.2",
     "@copilotkit/runtime": "^1.59.2",
     "@tailwindcss/typography": "^0.5.19",
