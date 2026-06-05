@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { FieldLabel } from '@/components/basics/FieldLabel';
 import { SegmentedControl } from '@/components/basics/SegmentedControl';
 import Navbar from '@/components/globals/Navbar';
-import { useCopilotAction, useCopilotReadable, useCopilotChat } from '@copilotkit/react-core';
-import { TextMessage, Role } from '@copilotkit/runtime-client-gql';
 
 const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
 const CURRENT_STEP = 2;
@@ -16,6 +14,22 @@ interface FormState {
   responsibilities: string;
   requirements: string;
   benefits: string;
+}
+
+const SECTION_KEYS = ['summary', 'responsibilities', 'requirements', 'benefits'] as const;
+const MARKERS = ['[SUMMARY]', '[RESPONSIBILITIES]', '[REQUIREMENTS]', '[BENEFITS]'];
+
+function parseSections(text: string): FormState {
+  const result: FormState = { summary: '', responsibilities: '', requirements: '', benefits: '' };
+  MARKERS.forEach((m, i) => {
+    const start = text.indexOf(m);
+    if (start === -1) return;
+    const contentStart = start + m.length;
+    const nextMarker = MARKERS[i + 1];
+    const end = nextMarker ? text.indexOf(nextMarker, contentStart) : text.length;
+    result[SECTION_KEYS[i]] = (end === -1 ? text.slice(contentStart) : text.slice(contentStart, end)).trim();
+  });
+  return result;
 }
 
 const textareaClass =
@@ -68,54 +82,50 @@ export default function JobDescriptionPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('jobPostingFormData');
-    if (saved) {
-      try { setBasicsData(JSON.parse(saved)); } catch { /* ignore */ }
+    const savedBasics = localStorage.getItem('jobPostingFormData');
+    if (savedBasics) {
+      try { setBasicsData(JSON.parse(savedBasics)); } catch { /* ignore */ }
+    }
+
+    const savedJD = localStorage.getItem('jobDescriptionFormData');
+    if (savedJD) {
+      try { setForm(JSON.parse(savedJD)); } catch { /* ignore */ }
     }
   }, []);
-
-  useCopilotReadable({
-    description: "Job posting basics filled by the hiring manager: title, department, location, work mode, employment type, salary range, education requirements, must-haves, nice-to-haves, and additional details",
-    value: basicsData ?? {},
-  });
-
-  useCopilotAction({
-    name: "fillJobDescription",
-    description: "Fill the job description form fields with AI-generated content based on the job basics",
-    parameters: [
-      { name: "summary", type: "string", description: "2-3 sentence overview of the role and its impact at Aareon", required: true },
-      { name: "responsibilities", type: "string", description: "5-7 key responsibilities, each prefixed with '• ' on its own line", required: true },
-      { name: "requirements", type: "string", description: "5-6 required qualifications drawing from mustHaves and education, each prefixed with '• '", required: true },
-      { name: "benefits", type: "string", description: "4-5 benefits Aareon offers including salary range, each prefixed with '• '", required: true },
-    ],
-    handler: async ({ summary, responsibilities, requirements, benefits }) => {
-      setForm({ summary, responsibilities, requirements, benefits });
-      setIsDrafting(false);
-      localStorage.setItem('jobDescriptionFormData', JSON.stringify({ summary, responsibilities, requirements, benefits }));
-      return "Job description filled successfully";
-    },
-  });
-
-  const { appendMessage, runChatCompletion } = useCopilotChat();
 
   const handleDraftWithAI = async () => {
     if (!basicsData || isDrafting) return;
     setIsDrafting(true);
-
-    const jobTitle = (basicsData as any).jobTitle || 'this role';
-    const salaryMin = (basicsData as any).salaryMin ?? '';
-    const salaryMax = (basicsData as any).salaryMax ?? '';
-    const currency = (basicsData as any).currency ?? 'EUR';
-    const salaryRange = salaryMin && salaryMax ? `${currency} ${salaryMin}–${salaryMax} per month` : '';
+    setForm({ summary: '', responsibilities: '', requirements: '', benefits: '' });
 
     try {
-      appendMessage(new TextMessage({
-        id: crypto.randomUUID(),
-        role: Role.User,
-        content: `You are an expert HR copywriter for Aareon, a European PropTech and SaaS company. Using the job basics in your context, generate a professional job description for the ${jobTitle} position.\n\nCall the fillJobDescription action with:\n- summary: 2-3 sentences describing the role and its business impact\n- responsibilities: 5-7 bullet points of key duties (prefix each line with "• ")\n- requirements: 5-6 bullet points of qualifications (incorporate mustHaves and education level; prefix each with "• ")\n- benefits: 4-5 bullet points of what Aareon offers${salaryRange ? `, including salary range ${salaryRange}` : ''} (prefix each with "• ")\n\nWrite in a direct, professional tone. Do not respond with text — call the fillJobDescription action immediately.`,
-      }));
-      await runChatCompletion();
+      const res = await fetch('/api/draft-jd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(basicsData),
+      });
+
+      if (!res.ok || !res.body) {
+        setIsDrafting(false);
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let full = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        full += decoder.decode(value, { stream: true });
+        setForm(parseSections(full));
+      }
+
+      const final = parseSections(full);
+      localStorage.setItem('jobDescriptionFormData', JSON.stringify(final));
     } catch {
+      // user can retry
+    } finally {
       setIsDrafting(false);
     }
   };
@@ -125,6 +135,7 @@ export default function JobDescriptionPage() {
     setForm(updated);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
+      localStorage.setItem('jobDescriptionFormData', JSON.stringify(updated));
     }, 300);
   };
 
@@ -136,7 +147,6 @@ export default function JobDescriptionPage() {
     localStorage.setItem('aareon.lang', v);
   };
 
-
   const isNextEnabled = form.summary.trim() !== '' || form.responsibilities.trim() !== '';
 
   const handleNext = () => {
@@ -145,8 +155,7 @@ export default function JobDescriptionPage() {
 
   const handleBack = () => {
     router.push('/basics');
-  }; 
-
+  };
 
   const S = STRINGS[lang];
 
@@ -314,7 +323,6 @@ export default function JobDescriptionPage() {
               <button
                 type="button"
                 onClick={handleNext}
-                // disabled={!isNextEnabled}
                 className={`rounded-xl px-5 py-3 font-medium text-white transition ${isNextEnabled ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}
                 style={{ backgroundColor: 'var(--color-blue)' }}
               >
