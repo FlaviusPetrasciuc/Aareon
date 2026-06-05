@@ -21,8 +21,6 @@ export default function LoginPage() {
     setTouched(true);
 
     if (!isValid) {
-      alert(`Please enter a valid ${allowedDomains} email address.`);
-
       return;
     }
     setLoading(true);
