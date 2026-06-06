@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/globals/Navbar';
+import { SegmentedControl } from '@/components/basics/SegmentedControl';
 
 const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
 const CURRENT_STEP = 3;
@@ -22,7 +23,6 @@ interface BasicsData {
   mustHaves?: string;
   niceToHaves?: string;
   shouldntHaves?: string;
-  additionalDetails?: string;
 }
 
 interface JobDescriptionData {
@@ -32,10 +32,58 @@ interface JobDescriptionData {
   benefits?: string;
 }
 
+const STRINGS = {
+  en: {
+    eyebrow: 'Overview · 3/4',
+    title: 'Create new job posting',
+    subtitle: 'Four steps — about 3 minutes',
+    reviewText: 'Review the details of your job posting before moving on.',
+    location: 'Location',
+    department: 'Department',
+    workMode: 'Work Mode',
+    employmentType: 'Employment Type',
+    salaryRange: 'Salary Range',
+    education: 'Education',
+    equipment: 'Work Equipment',
+    aboutRole: 'About the Role',
+    responsibilities: 'Responsibilities',
+    requirements: 'Requirements',
+    mustHaves: 'Must-Haves',
+    niceToHaves: 'Nice-to-Haves',
+    shouldntHaves: "Shouldn't Have",
+    whatWeOffer: 'What We Offer',
+    back: '← Back',
+    next: 'Next →',
+  },
+  nl: {
+    eyebrow: 'Overzicht · 3/4',
+    title: 'Nieuwe vacature aanmaken',
+    subtitle: 'Vier stappen — ongeveer 3 minuten',
+    reviewText: 'Controleer de details van uw vacature voordat u verdergaat.',
+    location: 'Locatie',
+    department: 'Afdeling',
+    workMode: 'Werkwijze',
+    employmentType: 'Dienstverband',
+    salaryRange: 'Salarisbereik',
+    education: 'Opleiding',
+    equipment: 'Werkuitrusting',
+    aboutRole: 'Over de functie',
+    responsibilities: 'Verantwoordelijkheden',
+    requirements: 'Vereisten',
+    mustHaves: 'Vereist',
+    niceToHaves: 'Pré',
+    shouldntHaves: 'Niet wenselijk',
+    whatWeOffer: 'Wat wij bieden',
+    back: '← Terug',
+    next: 'Volgende →',
+  },
+} as const;
+
 export default function Overview() {
   const router = useRouter();
   const [basics, setBasics] = useState<BasicsData>({});
   const [jd, setJd] = useState<JobDescriptionData>({});
+  const [lang, setLang] = useState<'en' | 'nl'>('en');
 
   useEffect(() => {
     try {
@@ -47,10 +95,23 @@ export default function Overview() {
       const j = localStorage.getItem('jobDescriptionFormData');
       if (j) setJd(JSON.parse(j));
     } catch { /* ignore */ }
+
+    try {
+      const l = localStorage.getItem('aareon.lang');
+      if (l === 'en' || l === 'nl') setLang(l);
+    } catch { /* ignore */ }
   }, []);
+
+  const handleLangChange = (value: string) => {
+    const v = value as 'en' | 'nl';
+    setLang(v);
+    localStorage.setItem('aareon.lang', v);
+  };
 
   const handleNext = () => router.push('/forward-to-recruiter');
   const handleBack = () => router.push('/job-description');
+
+  const S = STRINGS[lang];
 
   const salary =
     basics.salaryMin && basics.salaryMax
@@ -58,25 +119,32 @@ export default function Overview() {
       : '—';
 
   const equipment = [
-    basics.companyCar && 'Lease car',
-    basics.companyPhone && 'Company phone',
-  ]
-    .filter(Boolean)
-    .join(', ') || '—';
+    basics.companyCar && (lang === 'nl' ? 'Leaseauto' : 'Lease car'),
+    basics.companyPhone && (lang === 'nl' ? 'Zakelijke telefoon' : 'Company phone'),
+  ].filter(Boolean).join(', ') || '—';
 
   return (
     <>
       <Navbar />
       <main className="min-h-screen bg-[#f7f6f3] text-[#1f2937]">
         <div className="mx-auto max-w-7xl px-8 py-8">
+
           {/* Header */}
           <div className="mb-10 flex items-start justify-between">
             <div>
-              <p className="mb-3 text-sm text-gray-500">Overview · 3/4</p>
-              <h1 className="text-5xl font-serif tracking-tight text-[#172033]">
-                Create new job posting
-              </h1>
-              <p className="mt-3 text-lg text-gray-500">Four steps — about 3 minutes</p>
+              <p className="mb-3 text-sm text-gray-500">{S.eyebrow}</p>
+              <h1 className="text-5xl font-serif tracking-tight text-[#172033]">{S.title}</h1>
+              <p className="mt-3 text-lg text-gray-500">{S.subtitle}</p>
+            </div>
+            <div className="mt-1">
+              <SegmentedControl
+                value={lang}
+                onChange={handleLangChange}
+                options={[
+                  { label: 'EN', value: 'en' },
+                  { label: 'NL', value: 'nl' },
+                ]}
+              />
             </div>
           </div>
 
@@ -120,76 +188,73 @@ export default function Overview() {
               <h2 className="text-2xl font-serif text-[#172033] mb-2">
                 {basics.jobTitle || 'Untitled Position'}
               </h2>
-              <p className="text-gray-500 text-sm">
-                Review the details of your job posting before moving on.
-              </p>
+              <p className="text-gray-500 text-sm">{S.reviewText}</p>
             </div>
 
             {/* Job Details Grid */}
             <div className="grid grid-cols-2 gap-6 pb-4 border-b border-[#e7e5e4]">
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Location</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.location}</h3>
                 <p className="text-[#172033] capitalize">{basics.location || '—'}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Department</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.department}</h3>
                 <p className="text-[#172033] capitalize">{basics.department || '—'}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Work Mode</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.workMode}</h3>
                 <p className="text-[#172033] capitalize">{basics.workMode || '—'}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Employment Type</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.employmentType}</h3>
                 <p className="text-[#172033] capitalize">{basics.employmentType || '—'}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Salary Range</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.salaryRange}</h3>
                 <p className="text-[#172033]">{salary}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Education</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.education}</h3>
                 <p className="text-[#172033] uppercase">{basics.education || '—'}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Work Equipment</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.equipment}</h3>
                 <p className="text-[#172033]">{equipment}</p>
               </div>
             </div>
 
-            {/* AI Generated Sections */}
             {jd.summary && (
               <div>
-                <h3 className="text-lg font-semibold text-[#172033] mb-3">About the Role</h3>
+                <h3 className="text-lg font-semibold text-[#172033] mb-3">{S.aboutRole}</h3>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-line">{jd.summary}</p>
               </div>
             )}
 
             {jd.responsibilities && (
               <div>
-                <h3 className="text-lg font-semibold text-[#172033] mb-3">Responsibilities</h3>
+                <h3 className="text-lg font-semibold text-[#172033] mb-3">{S.responsibilities}</h3>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-line">{jd.responsibilities}</p>
               </div>
             )}
 
-            {jd.requirements && (
+            {(jd.requirements || basics.mustHaves) && (
               <div>
-                <h3 className="text-lg font-semibold text-[#172033] mb-3">Requirements</h3>
+                <h3 className="text-lg font-semibold text-[#172033] mb-3">{S.requirements}</h3>
                 {basics.mustHaves && (
                   <>
-                    <p className="text-gray-700 font-medium mb-2">Must-Haves:</p>
+                    <p className="text-gray-700 font-medium mb-2">{S.mustHaves}:</p>
                     <p className="text-gray-700 leading-relaxed whitespace-pre-line mb-3">{basics.mustHaves}</p>
                   </>
                 )}
                 {basics.niceToHaves && (
                   <>
-                    <p className="text-gray-700 font-medium mb-2">Nice-to-Haves:</p>
+                    <p className="text-gray-700 font-medium mb-2">{S.niceToHaves}:</p>
                     <p className="text-gray-700 leading-relaxed whitespace-pre-line mb-3">{basics.niceToHaves}</p>
                   </>
                 )}
                 {basics.shouldntHaves && (
                   <>
-                    <p className="text-gray-700 font-medium mb-2">Shouldn't Have:</p>
+                    <p className="text-gray-700 font-medium mb-2">{S.shouldntHaves}:</p>
                     <p className="text-gray-700 leading-relaxed whitespace-pre-line">{basics.shouldntHaves}</p>
                   </>
                 )}
@@ -198,7 +263,7 @@ export default function Overview() {
 
             {jd.benefits && (
               <div>
-                <h3 className="text-lg font-semibold text-[#172033] mb-3">What We Offer</h3>
+                <h3 className="text-lg font-semibold text-[#172033] mb-3">{S.whatWeOffer}</h3>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-line">{jd.benefits}</p>
               </div>
             )}
@@ -211,16 +276,17 @@ export default function Overview() {
                 onClick={handleBack}
                 className="rounded-xl border border-[#d6d3d1] bg-white px-5 py-3 font-medium text-[#172033] transition hover:bg-gray-50"
               >
-                ← Back
+                {S.back}
               </button>
               <button
                 onClick={handleNext}
                 className="rounded-xl bg-[#6b6fcf] px-5 py-3 font-medium text-white transition hover:opacity-90"
               >
-                Next →
+                {S.next}
               </button>
             </div>
           </div>
+
         </div>
       </main>
     </>
