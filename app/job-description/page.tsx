@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FieldLabel } from '@/components/basics/FieldLabel';
-import { SegmentedControl } from '@/components/basics/SegmentedControl';
 import Navbar from '@/components/globals/Navbar';
 
 const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
@@ -78,8 +77,21 @@ export default function JobDescriptionPage() {
   });
   const [isDrafting, setIsDrafting] = useState(false);
   const [basicsData, setBasicsData] = useState<Record<string, unknown> | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedStyle, setSelectedStyle] = useState<{ style: string; label: string }>({ style: 'standard', label: 'Standard' });
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const savedBasics = localStorage.getItem('jobPostingFormData');
@@ -93,8 +105,10 @@ export default function JobDescriptionPage() {
     }
   }, []);
 
-  const handleDraftWithAI = async () => {
+  const handleDraftWithAI = async (style: 'standard' | 'extensive' | 'short' | 'informal' = 'standard', label = 'Standard') => {
     if (!basicsData || isDrafting) return;
+    setDropdownOpen(false);
+    setSelectedStyle({ style, label });
     setIsDrafting(true);
     setForm({ summary: '', responsibilities: '', requirements: '', benefits: '' });
 
@@ -102,7 +116,7 @@ export default function JobDescriptionPage() {
       const res = await fetch('/api/draft-jd', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(basicsData),
+        body: JSON.stringify({ ...basicsData, style }),
       });
 
       if (!res.ok || !res.body) {
@@ -139,13 +153,7 @@ export default function JobDescriptionPage() {
     }, 300);
   };
 
-  const [lang, setLang] = useState<'en' | 'nl'>('en');
-
-  const handleLangChange = (value: string) => {
-    const v = value as 'en' | 'nl';
-    setLang(v);
-    localStorage.setItem('aareon.lang', v);
-  };
+  const lang = 'en' as const;
 
   const isNextEnabled = form.summary.trim() !== '' || form.responsibilities.trim() !== '';
 
@@ -177,16 +185,6 @@ export default function JobDescriptionPage() {
             <p className="mt-3 text-lg" style={{ color: 'var(--color-body)' }}>
               {S.subtitle}
             </p>
-          </div>
-          <div className="mt-1">
-            <SegmentedControl
-              value={lang}
-              onChange={handleLangChange}
-              options={[
-                { label: 'EN', value: 'en' },
-                { label: 'NL', value: 'nl' },
-              ]}
-            />
           </div>
         </div>
 
@@ -247,15 +245,39 @@ export default function JobDescriptionPage() {
                   {S.aiBannerHint}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleDraftWithAI}
-                disabled={isDrafting || !basicsData}
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: '#FF7F62' }}
-              >
-                {isDrafting ? 'Drafting…' : '✨ Draft with AI'}
-              </button>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen(o => !o)}
+                  disabled={isDrafting || !basicsData}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: '#FF7F62' }}
+                >
+                  {isDrafting ? 'Drafting…' : `✨ Generate with AI · ${selectedStyle.label}`}
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 top-full z-10 mt-1 w-52 overflow-hidden rounded-lg border bg-white shadow-lg" style={{ borderColor: 'var(--color-stone)' }}>
+                    {[
+                      { style: 'standard', label: 'Standard' },
+                      { style: 'short',    label: 'Short' },
+                      { style: 'extensive', label: 'Extensive' },
+                      { style: 'informal', label: 'Informal' },
+                    ].map(({ style, label }) => (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => handleDraftWithAI(style as 'standard' | 'extensive' | 'short' | 'informal', label)}
+                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#FFD8CA] transition-colors"
+                        style={{ color: 'var(--color-headline)' }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Summary */}
