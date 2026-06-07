@@ -24,11 +24,6 @@ type ApprovalFormData = {
   financieleToelichting: string;
   verwachteImpact: string;
   bijdrageAanDoelen: string;
-  startdatum: string;
-  domeinverantwoordelijkeBesluit: "Go" | "No-go" | "";
-  domeinverantwoordelijkeOpmerking: string;
-  cfoBesluit: "Go" | "No-go" | "";
-  cfoOpmerking: string;
 };
 
 type FieldName = keyof ApprovalFormData;
@@ -49,11 +44,6 @@ const initialFormData: ApprovalFormData = {
   financieleToelichting: "",
   verwachteImpact: "",
   bijdrageAanDoelen: "",
-  startdatum: "",
-  domeinverantwoordelijkeBesluit: "",
-  domeinverantwoordelijkeOpmerking: "",
-  cfoBesluit: "",
-  cfoOpmerking: "",
 };
 
 const requiredFields: FieldName[] = [
@@ -72,7 +62,6 @@ const requiredFields: FieldName[] = [
   "financieleToelichting",
   "verwachteImpact",
   "bijdrageAanDoelen",
-  "startdatum",
 ];
 
 function FieldError({ message }: { message?: string }) {
@@ -500,103 +489,6 @@ export default function ApprovalRequestPage() {
               />
 
               <FieldError message={errors.bijdrageAanDoelen} />
-            </div>
-          </Section>
-
-          <Section title="Besluit">
-            <div>
-              <label className={labelClass} htmlFor="startdatum">
-                Startdatum
-              </label>
-
-              <input
-                id="startdatum"
-                type="date"
-                className={inputClass}
-                value={formData.startdatum}
-                onChange={(e) => setValue("startdatum", e.target.value)}
-              />
-
-              <FieldError message={errors.startdatum} />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Domeinverantwoordelijke
-              </label>
-
-              <div className="grid grid-cols-2 gap-2">
-                {["Go", "No-go"].map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() =>
-                      setValue("domeinverantwoordelijkeBesluit", option)
-                    }
-                    className={`h-12 rounded-lg border text-sm font-semibold transition ${
-                      formData.domeinverantwoordelijkeBesluit === option
-                        ? "border-aareon-bright bg-aareon-bright text-white"
-                        : "border-aareon-stone bg-white text-aareon-headline"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label
-                className={labelClass}
-                htmlFor="domeinverantwoordelijkeOpmerking"
-              >
-                Opmerking
-              </label>
-
-              <textarea
-                id="domeinverantwoordelijkeOpmerking"
-                className={textareaClass}
-                value={formData.domeinverantwoordelijkeOpmerking}
-                onChange={(e) =>
-                  setValue("domeinverantwoordelijkeOpmerking", e.target.value)
-                }
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                CFO
-              </label>
-
-              <div className="grid grid-cols-2 gap-2">
-                {["Go", "No-go"].map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setValue("cfoBesluit", option)}
-                    className={`h-12 rounded-lg border text-sm font-semibold transition ${
-                      formData.cfoBesluit === option
-                        ? "border-aareon-bright bg-aareon-bright text-white"
-                        : "border-aareon-stone bg-white text-aareon-headline"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className={labelClass} htmlFor="cfoOpmerking">
-                Opmerking
-              </label>
-
-              <textarea
-                id="cfoOpmerking"
-                className={textareaClass}
-                value={formData.cfoOpmerking}
-                onChange={(e) => setValue("cfoOpmerking", e.target.value)}
-              />
             </div>
           </Section>
         </div>
