@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const request = {
+  id: "1",
   manager: "Olena Popova",
   email: "olena.popova@aareon.nl",
   recruiter: "Recruitment Team",
@@ -32,6 +33,46 @@ export default function ReviewRequestPage() {
   const [modalType, setModalType] = useState<"approved" | "rejected" | null>(
     null
   );
+  const [feedback, setFeedback] = useState("");
+const [submitting, setSubmitting] = useState(false);
+const [error, setError] = useState("");
+
+const handleDecision = (decision: "approved" | "rejected") => async () => {
+  setSubmitting(true);
+  setError("");
+  try {
+    const res = await fetch("/api/director/decide", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        submissionId: request.id,
+        managerEmail: request.email,
+        jobTitle: request.document,
+        decision,
+        feedback: decision === "rejected" ? feedback : undefined,
+      }),
+    });
+
+    if (!res.ok) throw new Error("Failed to submit decision");
+
+    // Update status in localStorage
+    const submissions = JSON.parse(
+      localStorage.getItem("directorSubmissions") || "[]"
+    );
+    const updated = submissions.map((s: any) =>
+      s.id === request.id
+        ? { ...s, status: decision === "approved" ? "Reviewed" : "Rejected", approval: decision === "approved" ? "Approved" : "Rejected" }
+        : s
+    );
+    localStorage.setItem("directorSubmissions", JSON.stringify(updated));
+
+    setModalType(decision);
+  } catch (err) {
+    setError("Something went wrong. Please try again.");
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[var(--color-sand)] text-[var(--color-body)]">
@@ -83,17 +124,20 @@ export default function ReviewRequestPage() {
                 Reason for rejection, optional
               </label>
 
-              <textarea
-                placeholder="Write feedback for the manager..."
-                className="min-h-32 w-full rounded-[18px] border border-[var(--color-stone)] bg-white p-4 outline-none focus:border-[var(--color-bright)]"
-              />
+            <textarea
+              placeholder="Write feedback for the manager..."
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              className="min-h-32 w-full rounded-[18px] border border-[var(--color-stone)] bg-white p-4 outline-none focus:border-[var(--color-bright)]"
+            />
 
-              <button
-                onClick={() => setModalType("rejected")}
-                className="mt-4 rounded-full bg-[var(--color-coral)] px-6 py-3 font-semibold text-[var(--color-headline)] transition hover:opacity-90"
-              >
-                Submit rejection
-              </button>
+          <button
+            onClick={handleDecision("rejected")}
+            disabled={submitting}
+            className="mt-4 rounded-full bg-[var(--color-coral)] px-6 py-3 font-semibold text-[var(--color-headline)] transition hover:opacity-90 disabled:opacity-50"
+          >
+            {submitting ? "Submitting..." : "Submit rejection"}
+          </button>
             </div>
           )}
 
@@ -105,12 +149,13 @@ export default function ReviewRequestPage() {
               Reject
             </button>
 
-            <button
-              onClick={() => setModalType("approved")}
-              className="rounded-full bg-[var(--color-blue)] px-6 py-3 font-semibold text-white transition hover:bg-[var(--color-bright)]"
-            >
-              Approve
-            </button>
+          <button
+            onClick={handleDecision("approved")}
+            disabled={submitting}
+            className="rounded-full bg-[var(--color-blue)] px-6 py-3 font-semibold text-white transition hover:bg-[var(--color-bright)] disabled:opacity-50"
+          >
+            {submitting ? "Submitting..." : "Approve"}
+          </button>
           </div>
         </section>
       </div>
