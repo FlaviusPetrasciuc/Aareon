@@ -30,12 +30,26 @@ export default function LoginPage() {
     setLoading(true);
 
     const normalizedEmail = normalizeEmail(email);
+
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: normalizedEmail, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error ?? 'Something went wrong');
+      setLoading(false);
+      return;
+    }
+
     localStorage.setItem("managerEmail", normalizedEmail);
     localStorage.removeItem("aareonApprovalStatus");
     document.cookie = `aareon_session=${normalizedEmail}; path=/; max-age=86400`;
     document.cookie = "aareon_approval=; path=/; max-age=0";
 
-    await new Promise((r) => setTimeout(r, 900));
     router.push("/approval");
   }
 
