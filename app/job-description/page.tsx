@@ -19,16 +19,45 @@ const SECTION_KEYS = ['summary', 'responsibilities', 'requirements', 'benefits']
 const MARKERS = ['[SUMMARY]', '[RESPONSIBILITIES]', '[REQUIREMENTS]', '[BENEFITS]'];
 
 function parseSections(text: string): FormState {
-  const result: FormState = { summary: '', responsibilities: '', requirements: '', benefits: '' };
+  const result: FormState = {
+    summary: '',
+    responsibilities: '',
+    requirements: '',
+    benefits: '',
+  };
+
   MARKERS.forEach((m, i) => {
     const start = text.indexOf(m);
+
     if (start === -1) return;
+
     const contentStart = start + m.length;
     const nextMarker = MARKERS[i + 1];
     const end = nextMarker ? text.indexOf(nextMarker, contentStart) : text.length;
-    result[SECTION_KEYS[i]] = (end === -1 ? text.slice(contentStart) : text.slice(contentStart, end)).trim();
+
+    result[SECTION_KEYS[i]] = (
+      end === -1 ? text.slice(contentStart) : text.slice(contentStart, end)
+    ).trim();
   });
+
   return result;
+}
+
+function buildJobDescriptionText(form: FormState) {
+  return [
+    form.summary,
+    '',
+    'Responsibilities:',
+    form.responsibilities,
+    '',
+    'Requirements:',
+    form.requirements,
+    '',
+    'What we offer:',
+    form.benefits,
+  ]
+    .filter((part) => part !== undefined && part !== null && String(part).trim() !== '')
+    .join('\n');
 }
 
 const textareaClass =
@@ -69,16 +98,17 @@ const STRINGS = {
 
 export default function JobDescriptionPage() {
   const router = useRouter();
+
   const [form, setForm] = useState<FormState>({
     summary: '',
     responsibilities: '',
     requirements: '',
     benefits: '',
   });
+
   const [isDrafting, setIsDrafting] = useState(false);
   const [basicsData, setBasicsData] = useState<Record<string, unknown> | null>(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedStyle, setSelectedStyle] = useState<{ style: string; label: string }>({ style: 'standard', label: 'Standard' });
+  const [lang, setLang] = useState<'en' | 'nl'>('en');
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -94,14 +124,32 @@ export default function JobDescriptionPage() {
   }, []);
 
   useEffect(() => {
+    const savedLang = localStorage.getItem('aareon.lang');
+
+    if (savedLang === 'en' || savedLang === 'nl') {
+      setLang(savedLang);
+    }
+
     const savedBasics = localStorage.getItem('jobPostingFormData');
+
     if (savedBasics) {
-      try { setBasicsData(JSON.parse(savedBasics)); } catch { /* ignore */ }
+      try {
+        setBasicsData(JSON.parse(savedBasics));
+      } catch {
+        // ignore
+      }
     }
 
     const savedJD = localStorage.getItem('jobDescriptionFormData');
+
     if (savedJD) {
-      try { setForm(JSON.parse(savedJD)); } catch { /* ignore */ }
+      try {
+        const parsed = JSON.parse(savedJD) as FormState;
+        setForm(parsed);
+        localStorage.setItem('jobDescriptionText', buildJobDescriptionText(parsed));
+      } catch {
+        // ignore
+      }
     }
   }, []);
 
@@ -109,8 +157,25 @@ export default function JobDescriptionPage() {
     if (!basicsData || isDrafting) return;
     setDropdownOpen(false);
     setSelectedStyle({ style, label });
+  const saveJobDescription = (data: FormState) => {
+    localStorage.setItem('jobDescriptionFormData', JSON.stringify(data));
+    localStorage.setItem('jobDescriptionText', buildJobDescriptionText(data));
+  };
+
+  const handleDraftWithAI = async () => {
+    if (!basicsData || isDrafting) return;
+
     setIsDrafting(true);
-    setForm({ summary: '', responsibilities: '', requirements: '', benefits: '' });
+
+    const emptyForm = {
+      summary: '',
+      responsibilities: '',
+      requirements: '',
+      benefits: '',
+    };
+
+    setForm(emptyForm);
+    saveJobDescription(emptyForm);
 
     try {
       const res = await fetch('/api/draft-jd', {
@@ -130,13 +195,19 @@ export default function JobDescriptionPage() {
 
       while (true) {
         const { done, value } = await reader.read();
+
         if (done) break;
+
         full += decoder.decode(value, { stream: true });
-        setForm(parseSections(full));
+
+        const streamed = parseSections(full);
+        setForm(streamed);
+        saveJobDescription(streamed);
       }
 
       const final = parseSections(full);
-      localStorage.setItem('jobDescriptionFormData', JSON.stringify(final));
+      setForm(final);
+      saveJobDescription(final);
     } catch {
       // user can retry
     } finally {
@@ -146,22 +217,33 @@ export default function JobDescriptionPage() {
 
   const handleChange = (field: keyof FormState, value: string) => {
     const updated = { ...form, [field]: value };
+
     setForm(updated);
+
     if (debounceRef.current) clearTimeout(debounceRef.current);
+
     debounceRef.current = setTimeout(() => {
-      localStorage.setItem('jobDescriptionFormData', JSON.stringify(updated));
+      saveJobDescription(updated);
     }, 300);
   };
 
-  const lang = 'en' as const;
+  const handleLangChange = (value: string) => {
+    const v = value as 'en' | 'nl';
 
-  const isNextEnabled = form.summary.trim() !== '' || form.responsibilities.trim() !== '';
+    setLang(v);
+    localStorage.setItem('aareon.lang', v);
+  };
+
+  const isNextEnabled =
+    form.summary.trim() !== '' || form.responsibilities.trim() !== '';
 
   const handleNext = () => {
+    saveJobDescription(form);
     router.push('/overview');
   };
 
   const handleBack = () => {
+    saveJobDescription(form);
     router.push('/basics');
   };
 
@@ -169,71 +251,108 @@ export default function JobDescriptionPage() {
 
   return (
     <>
-    <Navbar />
-    <main className="min-h-screen" style={{ backgroundColor: 'var(--color-sand)', color: 'var(--color-body)' }}>
-      <div className="mx-auto max-w-7xl px-8 py-8">
+      <Navbar />
 
-        {/* Header */}
-        <div className="mb-10 flex items-start justify-between">
-          <div>
-            <p className="mb-1 text-sm" style={{ color: 'var(--color-body)' }}>
-              {S.eyebrow}
-            </p>
-            <h1 className="text-5xl font-serif tracking-tight" style={{ color: 'var(--color-headline)' }}>
-              {S.title}
-            </h1>
-            <p className="mt-3 text-lg" style={{ color: 'var(--color-body)' }}>
-              {S.subtitle}
-            </p>
+      <main
+        className="min-h-screen"
+        style={{
+          backgroundColor: 'var(--color-sand)',
+          color: 'var(--color-body)',
+        }}
+      >
+        <div className="mx-auto max-w-7xl px-8 py-8">
+          <div className="mb-10 flex items-start justify-between">
+            <div>
+              <p className="mb-1 text-sm" style={{ color: 'var(--color-body)' }}>
+                {S.eyebrow}
+              </p>
+
+              <h1
+                className="text-5xl font-serif tracking-tight"
+                style={{ color: 'var(--color-headline)' }}
+              >
+                {S.title}
+              </h1>
+
+              <p className="mt-3 text-lg" style={{ color: 'var(--color-body)' }}>
+                {S.subtitle}
+              </p>
+            </div>
+
+            <div className="mt-1">
+              <SegmentedControl
+                value={lang}
+                onChange={handleLangChange}
+                options={[
+                  { label: 'EN', value: 'en' },
+                  { label: 'NL', value: 'nl' },
+                ]}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Stepper */}
-        <div className="mb-10 flex items-center">
-          {STEPS.map((step, index) => {
-            const stepNumber = index + 1;
-            const isDone = stepNumber < CURRENT_STEP;
-            const isCurrent = stepNumber === CURRENT_STEP;
+          <div className="mb-10 flex items-center">
+            {STEPS.map((step, index) => {
+              const stepNumber = index + 1;
+              const isDone = stepNumber < CURRENT_STEP;
+              const isCurrent = stepNumber === CURRENT_STEP;
 
-            return (
-              <React.Fragment key={step}>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium"
-                    style={{
-                      backgroundColor: isDone ? '#50B214' : isCurrent ? 'var(--color-blue)' : 'white',
-                      borderColor: isDone ? '#50B214' : isCurrent ? 'var(--color-blue)' : 'var(--color-stone)',
-                      color: isDone || isCurrent ? 'white' : 'var(--color-body)',
-                    }}
-                  >
-                    {isDone ? '✓' : stepNumber}
+              return (
+                <React.Fragment key={step}>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium"
+                      style={{
+                        backgroundColor: isDone
+                          ? '#50B214'
+                          : isCurrent
+                          ? 'var(--color-blue)'
+                          : 'white',
+                        borderColor: isDone
+                          ? '#50B214'
+                          : isCurrent
+                          ? 'var(--color-blue)'
+                          : 'var(--color-stone)',
+                        color: isDone || isCurrent ? 'white' : 'var(--color-body)',
+                      }}
+                    >
+                      {isDone ? '✓' : stepNumber}
+                    </div>
+
+                    <span
+                      className="text-[15px]"
+                      style={{
+                        color: isCurrent
+                          ? 'var(--color-headline)'
+                          : 'var(--color-body)',
+                      }}
+                    >
+                      {step}
+                    </span>
                   </div>
-                  <span
-                    className="text-[15px]"
-                    style={{ color: isCurrent ? 'var(--color-headline)' : 'var(--color-body)' }}
-                  >
-                    {step}
-                  </span>
-                </div>
-                {index < STEPS.length - 1 && (
-                  <div className="mx-5 h-px flex-1" style={{ backgroundColor: 'var(--color-stone)' }} />
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
 
-        {/* Form card */}
-        <div
-          className="overflow-hidden rounded-2xl border"
-          style={{ borderColor: 'var(--color-stone)', backgroundColor: 'var(--color-sand)' }}
-        >
-          <div className="space-y-6 p-8">
-            {/* Draft with AI banner */}
-            <div className="flex items-center gap-4 rounded-xl p-4" style={{ backgroundColor: '#FFD8CA' }}>
+                  {index < STEPS.length - 1 && (
+                    <div
+                      className="mx-5 h-px flex-1"
+                      style={{ backgroundColor: 'var(--color-stone)' }}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+
+          <div
+            className="overflow-hidden rounded-2xl border"
+            style={{
+              borderColor: 'var(--color-stone)',
+              backgroundColor: 'var(--color-sand)',
+            }}
+          >
+            <div className="space-y-6 p-8">
               <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xl"
-                style={{ backgroundColor: '#FF7F62', color: 'white' }}
+                className="flex items-center gap-4 rounded-xl p-4"
+                style={{ backgroundColor: '#FFD8CA' }}
               >
                 ✨
               </div>
@@ -279,83 +398,128 @@ export default function JobDescriptionPage() {
                 )}
               </div>
             </div>
+                <div
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xl"
+                  style={{ backgroundColor: '#FF7F62', color: 'white' }}
+                >
+                  ✨
+                </div>
 
-            {/* Summary */}
-            <div>
-              <FieldLabel label={S.summary} />
-              <textarea
-                rows={3}
-                className={textareaClass}
-                value={form.summary}
-                onChange={e => handleChange('summary', e.target.value)}
-              />
-            </div>
+                <div className="flex-1">
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: 'var(--color-headline)' }}
+                  >
+                    ✨ Draft with AI
+                  </p>
 
-            {/* Responsibilities */}
-            <div>
-              <FieldLabel label={S.responsibilities} />
-              <textarea
-                rows={5}
-                className={textareaClass}
-                value={form.responsibilities}
-                onChange={e => handleChange('responsibilities', e.target.value)}
-              />
-            </div>
+                  <p className="text-xs" style={{ color: 'var(--color-body)' }}>
+                    {S.aiBannerHint}
+                  </p>
+                </div>
 
-            {/* Requirements + What we offer — two columns */}
-            <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={handleDraftWithAI}
+                  disabled={isDrafting || !basicsData}
+                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  style={{ backgroundColor: '#FF7F62' }}
+                >
+                  {isDrafting ? 'Drafting…' : '✨ Draft with AI'}
+                </button>
+              </div>
+
               <div>
-                <FieldLabel label={S.requirements} />
+                <FieldLabel label={S.summary} />
+                <textarea
+                  rows={3}
+                  className={textareaClass}
+                  value={form.summary}
+                  onChange={(e) => handleChange('summary', e.target.value)}
+                />
+              </div>
+
+              <div>
+                <FieldLabel label={S.responsibilities} />
                 <textarea
                   rows={5}
                   className={textareaClass}
-                  value={form.requirements}
-                  onChange={e => handleChange('requirements', e.target.value)}
+                  value={form.responsibilities}
+                  onChange={(e) =>
+                    handleChange('responsibilities', e.target.value)
+                  }
                 />
               </div>
-              <div>
-                <FieldLabel label={S.benefits} />
-                <textarea
-                  rows={5}
-                  className={textareaClass}
-                  value={form.benefits}
-                  onChange={e => handleChange('benefits', e.target.value)}
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <FieldLabel label={S.requirements} />
+                  <textarea
+                    rows={5}
+                    className={textareaClass}
+                    value={form.requirements}
+                    onChange={(e) => handleChange('requirements', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <FieldLabel label={S.benefits} />
+                  <textarea
+                    rows={5}
+                    className={textareaClass}
+                    value={form.benefits}
+                    onChange={(e) => handleChange('benefits', e.target.value)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Footer */}
-          <div
-            className="flex items-center border-t px-8 py-6"
-            style={{ borderColor: 'var(--color-stone)', backgroundColor: 'var(--color-sand)' }}
-          >
-            <button type="button" className="text-sm font-medium" style={{ color: 'var(--color-body)' }}>
-              {S.cancel}
-            </button>
-            <div className="flex flex-1 items-center justify-end gap-3">
+            <div
+              className="flex items-center border-t px-8 py-6"
+              style={{
+                borderColor: 'var(--color-stone)',
+                backgroundColor: 'var(--color-sand)',
+              }}
+            >
               <button
                 type="button"
-                onClick={handleBack}
-                className="rounded-xl border bg-white px-5 py-3 font-medium transition hover:bg-gray-50"
-                style={{ borderColor: 'var(--color-stone)', color: 'var(--color-headline)' }}
+                className="text-sm font-medium"
+                style={{ color: 'var(--color-body)' }}
               >
-                {S.back}
+                {S.cancel}
               </button>
-              <button
-                type="button"
-                onClick={handleNext}
-                className={`rounded-xl px-5 py-3 font-medium text-white transition ${isNextEnabled ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}
-                style={{ backgroundColor: 'var(--color-blue)' }}
-              >
-                {S.next}
-              </button>
+
+              <div className="flex flex-1 items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="rounded-xl border bg-white px-5 py-3 font-medium transition hover:bg-gray-50"
+                  style={{
+                    borderColor: 'var(--color-stone)',
+                    color: 'var(--color-headline)',
+                  }}
+                >
+                  {S.back}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={!isNextEnabled}
+                  className={`rounded-xl px-5 py-3 font-medium text-white transition ${
+                    isNextEnabled
+                      ? 'hover:opacity-90'
+                      : 'cursor-not-allowed opacity-50'
+                  }`}
+                  style={{ backgroundColor: 'var(--color-blue)' }}
+                >
+                  {S.next}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-
-      </div>
-    </main>
+      </main>
     </>
   );
 }
