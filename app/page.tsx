@@ -22,9 +22,7 @@ export default function LoginPage() {
     e.preventDefault();
     setTouched(true);
 
-    if (!isValid) {
-      return;
-    }
+    if (!isValid) return;
     setLoading(true);
 
     const normalizedEmail = normalizeEmail(email);

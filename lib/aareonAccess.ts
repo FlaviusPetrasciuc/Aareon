@@ -1,3 +1,5 @@
+import { getTestMessageUrl } from "nodemailer";
+
 export const AAREON_EMAIL_DOMAINS = ["gmail.com", "aareon.nl"];
 
 const ALLOWED_EMAILS = [
@@ -8,6 +10,7 @@ const ALLOWED_EMAILS = [
   "ria.feddema@aareon.nl",
   "sjoerd.meertens@aareon.nl",
   "daniel.hofman@aareon.nl",
+  "e.horvath2004@gmail.com",
 ];
 
 export function normalizeEmail(email: string): string {
