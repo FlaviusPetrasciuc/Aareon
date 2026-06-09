@@ -10,7 +10,7 @@ type ApprovalRequestBody = {
   datum: string;
   waaromNodig: string;
   risicoBijNietInvullen: string;
-  prioriteit: "Hoog";
+  prioriteit: "Laag" | "Middel" | "Hoog" | "";
   internMogelijk: "Ja" | "Nee" | "";
   interneToelichting: string;
   overwogenOpties: string;
@@ -19,11 +19,6 @@ type ApprovalRequestBody = {
   financieleToelichting: string;
   verwachteImpact: string;
   bijdrageAanDoelen: string;
-  startdatum: string;
-  domeinverantwoordelijkeBesluit: "Go" | "No-go" | "";
-  domeinverantwoordelijkeOpmerking: string;
-  cfoBesluit: "Go" | "No-go" | "";
-  cfoOpmerking: string;
 };
 
 const requiredFields: Array<keyof ApprovalRequestBody> = [
@@ -34,6 +29,7 @@ const requiredFields: Array<keyof ApprovalRequestBody> = [
   "datum",
   "waaromNodig",
   "risicoBijNietInvullen",
+  "prioriteit",
   "internMogelijk",
   "interneToelichting",
   "overwogenOpties",
@@ -42,7 +38,6 @@ const requiredFields: Array<keyof ApprovalRequestBody> = [
   "financieleToelichting",
   "verwachteImpact",
   "bijdrageAanDoelen",
-  "startdatum",
 ];
 
 function wrapText(text: string, maxChars = 90): string[] {
@@ -138,13 +133,6 @@ async function createApprovalRequestPdf(data: ApprovalRequestBody): Promise<Buff
   field("Verwachte impact (6-12m)", data.verwachteImpact);
   field("Bijdrage aan doelen", data.bijdrageAanDoelen);
 
-  section("Besluit");
-  field("Startdatum", data.startdatum);
-  field("Domeinverantwoordelijke", data.domeinverantwoordelijkeBesluit || "-");
-  field("Opmerking", data.domeinverantwoordelijkeOpmerking);
-  field("CFO", data.cfoBesluit || "-");
-  field("Opmerking", data.cfoOpmerking);
-
   return Buffer.from(await pdfDoc.save());
 }
 
@@ -176,7 +164,6 @@ export async function POST(req: NextRequest) {
     const pdfBuffer = await createApprovalRequestPdf({
       ...body,
       managerEmail: normalizedEmail,
-      prioriteit: "Hoog",
     });
 
     const transporter = nodemailer.createTransport({

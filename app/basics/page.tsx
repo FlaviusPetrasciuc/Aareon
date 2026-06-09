@@ -9,7 +9,7 @@ import { Select } from '@/components/basics/Select';
 import { SegmentedControl } from '@/components/basics/SegmentedControl';
 import { Textarea } from '@/components/basics/Textarea';
 import Navbar from '@/components/globals/Navbar';
-
+import { createSession, saveSession } from "@/lib/session";
 interface FormData {
     jobTitle: string;
     department: string;
@@ -121,23 +121,38 @@ export default function CreateJobPostingPage() {
     };
 
     const handleNext = async () => {
-        const isValid = validateInput();
+    const isValid = validateInput();
 
-        if (!isValid) {
-            const firstErrorField = document.querySelector('[data-error-field]');
+    if (!isValid) {
+        const firstErrorField = document.querySelector('[data-error-field]');
 
-            if (firstErrorField) {
-                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-
-            return;
+        if (firstErrorField) {
+            firstErrorField.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
         }
 
-        saveToLocalStorage(formData);
+        return;
+    }
 
-        console.log('Form data saved and navigating:', formData);
-        router.push('/job-description');
-    };
+    saveToLocalStorage(formData);
+
+    const managerEmail =
+        localStorage.getItem("managerEmail") ||
+        "manager@aareon.nl";
+
+    const session = createSession(
+        formData.jobTitle,
+        managerEmail
+    );
+
+    saveSession(session);
+
+    console.log("Session created:", session);
+
+    router.push("/job-description");
+};
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
