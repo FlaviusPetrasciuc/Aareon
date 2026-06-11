@@ -165,6 +165,21 @@ export default function Overview() {
               </div>
             )}
 
+            {/* About the comapany - HARDCODED for now, 
+            must be dynamic after we get all the custom 
+            descrptions for each location  */}
+
+            <div>
+              <h3 className="text-lg font-semibold text-[#172033] mb-3">About the Company</h3>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                Located in the beautiful province of Drenthe, Emmen offers a great work-life balance
+                with its green surroundings, excellent facilities, and strong community feel. We are
+                a forward-thinking organization that values innovation, collaboration, and personal
+                growth. Our culture is built on trust, transparency, and a shared passion for
+                technology.
+              </p>
+            </div>
+
             {jd.responsibilities && (
               <div>
                 <h3 className="text-lg font-semibold text-[#172033] mb-3">Responsibilities</h3>
