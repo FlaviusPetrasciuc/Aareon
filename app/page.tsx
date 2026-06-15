@@ -20,11 +20,7 @@ export default function LoginPage() {
     e.preventDefault();
     setTouched(true);
 
-    if (!isValid) {
-      alert(`Please enter a valid ${allowedDomains} email address.`);
-
-      return;
-    }
+    if (!isValid) return;
     setLoading(true);
 
     const normalizedEmail = normalizeEmail(email);
@@ -125,7 +121,6 @@ export default function LoginPage() {
                 </p>
               )}
             </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -138,14 +133,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Footer */}
-          <div className="mt-4 pt-2 border-t border-aareon-stone text-center">
-            <span className="font-body text-[11px] text-aareon-body/60 cursor-pointer hover:text-aareon-body transition-colors">
-              Privacy policy
-            </span>
-          </div>
-
         </div>
       </div>
     </div>
