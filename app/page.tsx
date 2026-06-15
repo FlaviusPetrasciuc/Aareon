@@ -108,7 +108,7 @@ export default function LoginPage() {
                 type="email"
                 autoFocus
                 autoComplete="email"
-                placeholder="u@gmail.com"
+                placeholder=" voorbeeld@aareon.nl"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={() => setTouched(true)}
