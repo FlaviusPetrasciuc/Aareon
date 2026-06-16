@@ -35,10 +35,10 @@ interface FieldError {
 }
 
 const STEPS = [
-    'Basics',
-    'Job description',
-    'Overview',
-    'Forward to recruiter',
+    'Basisinformatie',
+    'Functieomschrijving',
+    'Overzicht',
+    'Doorsturen naar recruiter',
 ];
 const CURRENT_STEP = 1;
 
@@ -97,23 +97,23 @@ export default function CreateJobPostingPage() {
         const newErrors: FieldError[] = [];
 
         if (!formData.jobTitle.trim()) {
-            newErrors.push({ field: 'jobTitle', message: 'Job title is required' });
+            newErrors.push({ field: 'jobTitle', message: 'Functietitel is verplicht' });
         }
 
         if (!formData.department) {
-            newErrors.push({ field: 'department', message: 'Department is required' });
+            newErrors.push({ field: 'department', message: 'Afdeling is verplicht' });
         }
 
         if (!formData.location.trim()) {
-            newErrors.push({ field: 'location', message: 'Location is required' });
+            newErrors.push({ field: 'location', message: 'Locatie is verplicht' });
         }
 
         if (!formData.education) {
-            newErrors.push({ field: 'education', message: 'Education level is required' });
+            newErrors.push({ field: 'education', message: 'Opleidingsniveau is verplicht' });
         }
 
         if (!formData.mustHaves) {
-            newErrors.push({ field: 'employeeRequirements', message: "Employee requirements are required" });
+            newErrors.push({ field: 'employeeRequirements', message: 'Functie-eisen zijn verplicht' });
         }
 
         setErrors(newErrors);
@@ -185,15 +185,15 @@ export default function CreateJobPostingPage() {
                     <div className="mb-10 flex items-start justify-between">
                         <div>
                             <p className="mb-3 text-sm" style={{ color: 'var(--color-body)' }}>
-                                Basics · 1/4
+                                Basisinformatie · 1/4
                             </p>
 
                             <h1 className="text-5xl font-serif tracking-tight" style={{ color: 'var(--color-headline)' }}>
-                                Create new job posting
+                                Nieuwe vacature aanmaken
                             </h1>
 
                             <p className="mt-3 text-lg" style={{ color: 'var(--color-body)' }}>
-                                Four steps — about 3 minutes
+                                Vier stappen — ongeveer 3 minuten
                             </p>
                         </div>
                     </div>
@@ -238,7 +238,7 @@ export default function CreateJobPostingPage() {
                         <div className="space-y-8 p-8">
                             {/* Job title */}
                             <div data-error-field={getFieldError('jobTitle') ? 'jobTitle' : undefined}>
-                                <FieldLabel label="Job title" required />
+                                <FieldLabel label="Functietitel" required />
                                 <Input
                                     name="jobTitle"
                                     value={formData.jobTitle}
@@ -259,18 +259,18 @@ export default function CreateJobPostingPage() {
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 {/* Department */}
                                 <div data-error-field={getFieldError('department') ? 'department' : undefined}>
-                                    <FieldLabel label="Department" required />
+                                    <FieldLabel label="Afdeling" required />
                                     <Select
                                         name="department"
                                         value={formData.department}
                                         onChange={handleInputChange}
                                         options={[
                                             { label: '—', value: '' },
-                                            { label: 'Administration', value: 'administration' },
+                                            { label: 'Administratie', value: 'administration' },
                                             { label: 'Consultancy', value: 'consultancy' },
-                                            { label: 'Development', value: 'development' },
-                                            { label: 'Facility Management', value: 'facility_management' },
-                                            { label: 'Finance', value: 'finance' },
+                                            { label: 'Ontwikkeling', value: 'development' },
+                                            { label: 'Facilitair Management', value: 'facility_management' },
+                                            { label: 'Financiën', value: 'finance' },
                                             { label: 'HRM', value: 'hrm' },
                                             { label: 'IT (systeembeheer)', value: 'it' },
                                             { label: 'Management', value: 'management' },
@@ -290,7 +290,7 @@ export default function CreateJobPostingPage() {
 
                                 {/* Location */}
                                 <div data-error-field={getFieldError('location') ? 'location' : undefined}>
-                                    <FieldLabel label="Location" required />
+                                    <FieldLabel label="Locatie" required />
                                     <Select
                                         name="location"
                                         value={formData.location}
@@ -320,7 +320,7 @@ export default function CreateJobPostingPage() {
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 {/* Work mode */}
                                 <div>
-                                    <FieldLabel label="Work Mode" />
+                                    <FieldLabel label="Werk Mode" />
                                     <SegmentedControl
                                         value={formData.workMode}
                                         onChange={(value) =>
@@ -330,16 +330,16 @@ export default function CreateJobPostingPage() {
                                             }))
                                         }
                                         options={[
-                                            { label: 'On-site', value: 'on-site' },
-                                            { label: 'Hybrid', value: 'hybrid' },
-                                            { label: 'Remote', value: 'remote' },
+                                            { label: 'Op locatie', value: 'on-site' },
+                                            { label: 'Hybride', value: 'hybrid' },
+                                            { label: 'Thuiswerken', value: 'remote' },
                                         ]}
                                     />
                                 </div>
 
                                 {/* Employment type */}
                                 <div>
-                                    <FieldLabel label="Employment type" />
+                                    <FieldLabel label="Dienstverband" />
                                     <SegmentedControl
                                         value={formData.employmentType}
                                         onChange={(value) =>
@@ -349,8 +349,8 @@ export default function CreateJobPostingPage() {
                                             }))
                                         }
                                         options={[
-                                            { label: 'Permanent', value: 'permanent' },
-                                            { label: 'Internship', value: 'internship' },
+                                            { label: 'Vast', value: 'permanent' },
+                                            { label: 'Stage', value: 'internship' },
                                         ]}
                                     />
                                 </div>
@@ -360,7 +360,7 @@ export default function CreateJobPostingPage() {
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 {/* Salary */}
                                 <div>
-                                    <FieldLabel label="Salary range (monthly)" />
+                                    <FieldLabel label="Salarisindicatie (per maand)" />
                                     <div className="flex items-center gap-3">
                                         <div className="relative w-28">
                                             <div className="h-12 w-full appearance-none rounded-xl border bg-white px-4 text-sm outline-none transition flex items-center justify-center"
@@ -389,7 +389,7 @@ export default function CreateJobPostingPage() {
 
                                 {/* Work Equipment */}
                                 <div>
-                                    <FieldLabel label="Work Equipment (optional)" />
+                                    <FieldLabel label="Werkuitrusting (optioneel)" />
                                     <div className="flex items-center gap-10 mt-6">
                                         <label className="flex items-center gap-2 cursor-pointer">
                                             <input
@@ -403,7 +403,7 @@ export default function CreateJobPostingPage() {
                                                     color: 'var(--color-bright)'
                                                 }}
                                             />
-                                            <span className="text-sm" style={{ color: 'var(--color-body)' }}>Lease car</span>
+                                            <span className="text-sm" style={{ color: 'var(--color-body)' }}>Leaseauto</span>
                                         </label>
 
                                         <label className="flex items-center gap-2 cursor-pointer">
@@ -418,24 +418,24 @@ export default function CreateJobPostingPage() {
                                                     color: 'var(--color-bright)'
                                                 }}
                                             />
-                                            <span className="text-sm" style={{ color: 'var(--color-body)' }}>Company phone</span>
+                                            <span className="text-sm" style={{ color: 'var(--color-body)' }}>Bedrijfstelefoon</span>
                                         </label>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Bonus Structure */}
-                            <FieldLabel label='Bonus Structure' />
+                            <FieldLabel label='Bonusstructuur' />
                             <Input
                                 name='bonusStructure'
                                 value={formData.bonusStructure}
                                 onChange={handleInputChange}
-                                placeholder='e.g. 70/30 Rekening (Sales Department), Standard Bonus (Other Departments)'
+                                placeholder='bijv. 70/30 regeling (sales afdeling), Standaard Bonus (andere afdelingen)'
                             />
 
                             {/* Education level */}
                             <div data-error-field={getFieldError('education') ? 'education' : undefined}>
-                                <FieldLabel label="Minimum Required Education Level" required />
+                                <FieldLabel label="Minimaal vereist opleidingsniveau" required />
                                 <Select
                                     name="education"
                                     value={formData.education}
@@ -445,7 +445,7 @@ export default function CreateJobPostingPage() {
                                         { label: 'HBO', value: 'hbo' },
                                         { label: 'MBO', value: 'mbo' },
                                         { label: 'WO', value: 'wo' },
-                                        { label: 'Not relevant', value: 'not_relevant' },
+                                        { label: 'Niet relevant', value: 'not_relevant' },
                                     ]}
                                     style={{
                                         borderColor: getFieldError('education') ? '#FF7F62' : undefined
@@ -460,15 +460,15 @@ export default function CreateJobPostingPage() {
 
                             {/* Employee Requirements */}
                             <div className="space-y-2">
-                                <FieldLabel label="Employee Requirements" />
+                                <FieldLabel label="Werknemerseisen" />
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                     <div data-error-field={getFieldError('mustHaves') ? 'mustHaves' : undefined}>
-                                        <FieldLabel label="Must have" required />
+                                        <FieldLabel label="Verplicht" required />
                                         <Textarea
                                             name="mustHaves"
                                             value={formData.mustHaves}
                                             onChange={handleInputChange}
-                                            placeholder="e.g. Experience in Sales, soft skills, fluent in Dutch and English etc."
+                                            placeholder="Bijv. Ervaring in sales, soft skills, vloeiend Nederlands en Engels, etc."
                                             style={{
                                                 borderColor: getFieldError('mustHaves') ? '#FF7F62' : undefined
                                             }}
@@ -481,34 +481,34 @@ export default function CreateJobPostingPage() {
                                     </div>
 
                                     <div>
-                                        <FieldLabel label="Nice-to have" />
+                                        <FieldLabel label="Pre" />
                                         <Textarea
                                             name="niceToHaves"
                                             value={formData.niceToHaves}
                                             onChange={handleInputChange}
-                                            placeholder="e.g. Knowledge in economics, experience with C++ etc."
+                                            placeholder="Bijv. Kennis van economie, ervaring met C++, etc."
                                         />
                                     </div>
 
                                     <div>
-                                        <FieldLabel label="Shouldn't have" />
+                                        <FieldLabel label="Bezwaar" />
                                         <Textarea
                                             name="shouldntHaves"
                                             value={formData.shouldntHaves}
                                             onChange={handleInputChange}
-                                            placeholder="e.g. Difficulty working in a team, unwillingness to offer help etc."
+                                            placeholder="Bijv. Moeite met samenwerken, onwil om hulp te bieden, etc."
                                         />
                                     </div>
                                 </div>
                             </div>
 
                             <div>
-                                <FieldLabel label="Additional Details" />
+                                <FieldLabel label="	Aanvullende informatie" />
                                 <Input
                                     name="additionalDetails"
                                     value={formData.additionalDetails}
                                     onChange={handleInputChange}
-                                    placeholder="e.g. Mention the working culture, what a day in the life of someone in this position looks like etc."
+                                    placeholder="Bijv. Vermeld de werkcultuur, hoe een dag in het leven van iemand in deze functie eruitziet, etc."
                                 />
                             </div>
 
@@ -522,7 +522,7 @@ export default function CreateJobPostingPage() {
                                             <path d="M10 6V10M10 14H10.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                         </svg>
                                         <span className="text-sm" style={{ color: 'var(--color-coral)' }}>
-                                            Please fill in all required fields
+                                            Vul alle verplichte velden in
                                         </span>
                                     </div>
                                 )}
@@ -531,7 +531,7 @@ export default function CreateJobPostingPage() {
                                         onClick={handleNext}
                                         className="rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
                                         style={{ backgroundColor: 'var(--color-bright)' }}>
-                                        Next →
+                                        Volgende →
                                     </button>
                                 </div>
                             </div>
