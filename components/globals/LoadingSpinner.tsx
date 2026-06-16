@@ -3,8 +3,8 @@ import React from 'react';
 
 const LoadingSpinner = ({
     isVisible = true,
-    title = "Redirecting you to the next page...",
-    subtitle = "Please wait, this will only take a moment",
+    title = "Je wordt doorgestuurd naar de volgende pagina...",
+    subtitle = "Even geduld, dit duurt maar een moment",
     spinnerSize = "w-12 h-12",
     onClose = null
 }) => {

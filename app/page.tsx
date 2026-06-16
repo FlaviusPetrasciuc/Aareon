@@ -20,11 +20,7 @@ export default function LoginPage() {
     e.preventDefault();
     setTouched(true);
 
-    if (!isValid) {
-      alert(`Please enter a valid ${allowedDomains} email address.`);
-
-      return;
-    }
+    if (!isValid) return;
     setLoading(true);
 
     const normalizedEmail = normalizeEmail(email);
@@ -87,10 +83,10 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
 
           <h2 className="font-title text-[28px] font-normal text-aareon-headline leading-tight mb-2 italic">
-            Sign in to<br />your workspace
+            Inloggen bij<br />uw werkruimte
           </h2>
           <p className="text-sm text-aareon-body font-light mb-9 leading-relaxed font-body">
-            Enter your Aareon corporate email to start the approval validation.
+            Voer uw Aareon-zakelijk e-mailadres in om de goedkeuringsvalidatie te starten.
           </p>
 
           <LoadingSpinner isVisible={loading} />
@@ -101,14 +97,14 @@ export default function LoginPage() {
                 htmlFor="email"
                 className="block font-mono text-[10px] font-medium tracking-[0.15em] uppercase text-aareon-body mb-2"
               >
-                Company email
+                Zakelijk e-mailadres
               </label>
               <input
                 id="email"
                 type="email"
                 autoFocus
                 autoComplete="email"
-                placeholder="you@gmail.com"
+                placeholder=" voorbeeld@aareon.nl"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={() => setTouched(true)}
@@ -121,11 +117,10 @@ export default function LoginPage() {
               />
               {showError && (
                 <p className="font-body text-xs text-aareon-coral mt-1.5">
-                  Please enter a valid {allowedDomains} email address.
+                  Voer een geldig {allowedDomains} e-mailadres in.
                 </p>
               )}
             </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -134,18 +129,10 @@ export default function LoginPage() {
               {loading ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <>Continue <span>→</span></>
+                <>Doorgaan <span>→</span></>
               )}
             </button>
           </form>
-
-          {/* Footer */}
-          <div className="mt-4 pt-2 border-t border-aareon-stone text-center">
-            <span className="font-body text-[11px] text-aareon-body/60 cursor-pointer hover:text-aareon-body transition-colors">
-              Privacy policy
-            </span>
-          </div>
-
         </div>
       </div>
     </div>
