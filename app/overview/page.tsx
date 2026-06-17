@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/globals/Navbar';
-import { SegmentedControl } from '@/components/basics/SegmentedControl';
 
-const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
+const STEPS = ['Basis', 'Functieomschrijving', 'Overzicht', 'Doorsturen naar recruiter'];
 const CURRENT_STEP = 3;
 
 interface BasicsData {
@@ -32,58 +31,33 @@ interface JobDescriptionData {
   benefits?: string;
 }
 
-const STRINGS = {
-  en: {
-    eyebrow: 'Overview · 3/4',
-    title: 'Create new job posting',
-    subtitle: 'Four steps — about 3 minutes',
-    reviewText: 'Review the details of your job posting before moving on.',
-    location: 'Location',
-    department: 'Department',
-    workMode: 'Work Mode',
-    employmentType: 'Employment Type',
-    salaryRange: 'Salary Range',
-    education: 'Education',
-    equipment: 'Work Equipment',
-    aboutRole: 'About the Role',
-    responsibilities: 'Responsibilities',
-    requirements: 'Requirements',
-    mustHaves: 'Must-Haves',
-    niceToHaves: 'Nice-to-Haves',
-    shouldntHaves: "Shouldn't Have",
-    whatWeOffer: 'What We Offer',
-    back: '← Back',
-    next: 'Next →',
-  },
-  nl: {
-    eyebrow: 'Overzicht · 3/4',
-    title: 'Nieuwe vacature aanmaken',
-    subtitle: 'Vier stappen — ongeveer 3 minuten',
-    reviewText: 'Controleer de details van uw vacature voordat u verdergaat.',
-    location: 'Locatie',
-    department: 'Afdeling',
-    workMode: 'Werkwijze',
-    employmentType: 'Dienstverband',
-    salaryRange: 'Salarisbereik',
-    education: 'Opleiding',
-    equipment: 'Werkuitrusting',
-    aboutRole: 'Over de functie',
-    responsibilities: 'Verantwoordelijkheden',
-    requirements: 'Vereisten',
-    mustHaves: 'Vereist',
-    niceToHaves: 'Pré',
-    shouldntHaves: 'Niet wenselijk',
-    whatWeOffer: 'Wat wij bieden',
-    back: '← Terug',
-    next: 'Volgende →',
-  },
-} as const;
+const S = {
+  eyebrow: 'Overzicht · 3/4',
+  title: 'Nieuwe vacature aanmaken',
+  subtitle: 'Vier stappen — ongeveer 3 minuten',
+  reviewText: 'Controleer de details van uw vacature voordat u verdergaat.',
+  location: 'Locatie',
+  department: 'Afdeling',
+  workMode: 'Werkwijze',
+  employmentType: 'Dienstverband',
+  salaryRange: 'Salarisbereik',
+  education: 'Opleiding',
+  equipment: 'Werkuitrusting',
+  aboutRole: 'Over de functie',
+  responsibilities: 'Verantwoordelijkheden',
+  requirements: 'Vereisten',
+  mustHaves: 'Vereist',
+  niceToHaves: 'Pré',
+  shouldntHaves: 'Niet wenselijk',
+  whatWeOffer: 'Wat wij bieden',
+  back: '← Terug',
+  next: 'Volgende →',
+};
 
 export default function Overview() {
   const router = useRouter();
   const [basics, setBasics] = useState<BasicsData>({});
   const [jd, setJd] = useState<JobDescriptionData>({});
-  const [lang, setLang] = useState<'en' | 'nl'>('en');
 
   useEffect(() => {
     try {
@@ -95,32 +69,19 @@ export default function Overview() {
       const j = localStorage.getItem('jobDescriptionFormData');
       if (j) setJd(JSON.parse(j));
     } catch { /* ignore */ }
-
-    try {
-      const l = localStorage.getItem('aareon.lang');
-      if (l === 'en' || l === 'nl') setLang(l);
-    } catch { /* ignore */ }
   }, []);
-
-  const handleLangChange = (value: string) => {
-    const v = value as 'en' | 'nl';
-    setLang(v);
-    localStorage.setItem('aareon.lang', v);
-  };
 
   const handleNext = () => router.push('/forward-to-recruiter');
   const handleBack = () => router.push('/job-description');
 
-  const S = STRINGS[lang];
-
   const salary =
     basics.salaryMin && basics.salaryMax
-      ? `${basics.currency ?? '€'}${basics.salaryMin} - ${basics.currency ?? '€'}${basics.salaryMax} per month`
+      ? `${basics.currency ?? '€'}${basics.salaryMin} - ${basics.currency ?? '€'}${basics.salaryMax} per maand`
       : '—';
 
   const equipment = [
-    basics.companyCar && (lang === 'nl' ? 'Leaseauto' : 'Lease car'),
-    basics.companyPhone && (lang === 'nl' ? 'Zakelijke telefoon' : 'Company phone'),
+    basics.companyCar && 'Leaseauto',
+    basics.companyPhone && 'Zakelijke telefoon',
   ].filter(Boolean).join(', ') || '—';
 
   return (
@@ -130,22 +91,10 @@ export default function Overview() {
         <div className="mx-auto max-w-7xl px-8 py-8">
 
           {/* Header */}
-          <div className="mb-10 flex items-start justify-between">
-            <div>
-              <p className="mb-3 text-sm text-gray-500">{S.eyebrow}</p>
-              <h1 className="text-5xl font-serif tracking-tight text-[#172033]">{S.title}</h1>
-              <p className="mt-3 text-lg text-gray-500">{S.subtitle}</p>
-            </div>
-            <div className="mt-1">
-              <SegmentedControl
-                value={lang}
-                onChange={handleLangChange}
-                options={[
-                  { label: 'EN', value: 'en' },
-                  { label: 'NL', value: 'nl' },
-                ]}
-              />
-            </div>
+          <div className="mb-10">
+            <p className="mb-3 text-sm text-gray-500">{S.eyebrow}</p>
+            <h1 className="text-5xl font-serif tracking-tight text-[#172033]">{S.title}</h1>
+            <p className="mt-3 text-lg text-gray-500">{S.subtitle}</p>
           </div>
 
           {/* Stepper */}
@@ -186,7 +135,7 @@ export default function Overview() {
           <div className="space-y-8 p-8">
             <div>
               <h2 className="text-2xl font-serif text-[#172033] mb-2">
-                {basics.jobTitle || 'Untitled Position'}
+                {basics.jobTitle || 'Naamloze functie'}
               </h2>
               <p className="text-gray-500 text-sm">{S.reviewText}</p>
             </div>
