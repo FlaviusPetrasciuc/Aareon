@@ -21,6 +21,7 @@ const MANAGERS = [
 
 const DIRECTORS = [
   // add director emails here
+  'e.horvath2004@aareon.nl',
 ];
 
 function getRole(email: string): 'manager' | 'director' | null {

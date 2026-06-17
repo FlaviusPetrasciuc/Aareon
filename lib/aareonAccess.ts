@@ -10,7 +10,8 @@ const ALLOWED_EMAILS = [
   "ria.feddema@aareon.nl",
   "sjoerd.meertens@aareon.nl",
   "daniel.hofman@aareon.nl",
-  "catvika922@gmail.com"
+  "catvika922@gmail.com",
+  "e.horvath2004@aareon.nl",
 ];
 
 export function normalizeEmail(email: string): string {

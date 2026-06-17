@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { signUp } from "@/app/actions/auth";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -19,16 +18,12 @@ export default function RegisterPage() {
   });
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const isValidEmail = /^[^\s@]+@(aareon\.nl|gmail\.com)$/.test(email);
   const isValidPassword = password.length >= 8;
   const isPasswordMatch = password === confirmPassword;
 
   const errors = {
-    email: touched.email && !isValidEmail
-      ? "This email is not authorised to register."
-      : null,
     password: touched.password && !isValidPassword
       ? "Password must be at least 8 characters."
       : null,
@@ -37,7 +32,7 @@ export default function RegisterPage() {
       : null,
   };
 
-  const isFormValid = isValidEmail && isValidPassword && isPasswordMatch;
+  const isFormValid = email.length > 0 && isValidPassword && isPasswordMatch;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,28 +42,21 @@ export default function RegisterPage() {
     setLoading(true);
     setApiError(null);
 
-    try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
-      });
+    const formData = new FormData();
+    formData.set("email", email.trim().toLowerCase());
+    formData.set("password", password);
+    formData.set("origin", window.location.origin);
 
-      const data = await res.json();
+    const result = await signUp(formData);
 
-      if (!res.ok) {
-        setApiError(data.error ?? 'Something went wrong');
-        setLoading(false);
-        return;
-      }
-
-      setSuccess(true);
-      setTimeout(() => router.push('/'), 2000);
-
-    } catch {
-      setApiError('Failed to connect to server');
+    if (result?.error) {
+      setApiError(result.error);
       setLoading(false);
+      return;
     }
+
+    setSuccess(result?.success ?? "Account created!");
+    setLoading(false);
   }
 
   return (
@@ -124,7 +112,7 @@ export default function RegisterPage() {
                 Account created!
               </h2>
               <p className="text-sm text-aareon-body font-light">
-                Redirecting you to sign in...
+                {success}
               </p>
             </div>
           ) : (
@@ -152,14 +140,8 @@ export default function RegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     onBlur={() => setTouched((t) => ({ ...t, email: true }))}
-                    className={[
-                      "w-full px-4 py-3 font-body text-sm font-light text-aareon-headline bg-white rounded-lg outline-none transition-all",
-                      errors.email
-                        ? "border-[1.5px] border-aareon-coral shadow-[0_0_0_3px_rgba(255,127,98,0.12)]"
-                        : "border-[1.5px] border-aareon-stone focus:border-aareon-bright focus:shadow-[0_0_0_3px_rgba(8,109,251,0.12)]",
-                    ].join(" ")}
+                    className="w-full px-4 py-3 font-body text-sm font-light text-aareon-headline bg-white rounded-lg outline-none transition-all border-[1.5px] border-aareon-stone focus:border-aareon-bright focus:shadow-[0_0_0_3px_rgba(8,109,251,0.12)]"
                   />
-                  {errors.email && <p className="font-body text-xs text-aareon-coral mt-1.5">{errors.email}</p>}
                 </div>
 
                 {/* Password */}
@@ -255,12 +237,6 @@ export default function RegisterPage() {
                   Sign in
                 </Link>
               </p>
-
-              <div className="mt-6 pt-4 border-t border-aareon-stone text-center">
-                <span className="font-body text-[11px] text-aareon-body/60 cursor-pointer hover:text-aareon-body transition-colors">
-                  Privacy policy
-                </span>
-              </div>
             </>
           )}
         </div>
