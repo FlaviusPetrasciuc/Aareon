@@ -65,12 +65,12 @@ export function ForwardToRecruiter({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error ?? "Something went wrong");
+        throw new Error(data.error ?? "Er is iets misgegaan.");
       }
 
       setIsDone(true);
     } catch (err: any) {
-      setError(err.message ?? "Failed to submit");
+      setError(err.message ?? "Het verzenden is mislukt.");
     } finally {
       setIsSubmitting(false);
     }
@@ -101,7 +101,8 @@ export function ForwardToRecruiter({
           </h3>
 
           <p className="max-w-sm text-[15px] text-gray-500">
-            Beide e-mails zijn verzonden. De recruiter neemt binnenkort contact op.
+            Beide e-mails zijn verzonden. De recruiter neemt binnenkort contact
+            op.
           </p>
         </div>
 
@@ -149,7 +150,8 @@ export function ForwardToRecruiter({
           </p>
 
           <p className="mt-0.5 text-sm text-[#16a34a]/80">
-            Bij het verzenden worden beide e-mails automatisch verstuurd naar de hiring manager en de recruiter.
+            Bij het verzenden worden beide e-mails automatisch verstuurd naar de
+            hiring manager en de recruiter.
           </p>
         </div>
       </div>
@@ -192,8 +194,9 @@ export function ForwardToRecruiter({
               </p>
 
               <p className="text-[13px] leading-relaxed text-gray-500">
-                Uw vacatureaanvraag is succesvol ingediend bij Bram Feij. 
-                De intake-PDF bevat de vragen, antwoorden en de AI-gegenereerde functieomschrijving.
+                Uw vacatureaanvraag is succesvol ingediend bij Bram Feij. De
+                intake-PDF bevat de vragen, antwoorden en de AI-gegenereerde
+                functieomschrijving.
               </p>
             </div>
 
@@ -245,9 +248,9 @@ export function ForwardToRecruiter({
               </p>
 
               <p className="text-[13px] leading-relaxed text-gray-500">
-                {managerEmail} heeft een nieuwe vacatureaanvraag ingediend ter beoordeling. 
-                Alles wat u nodig heeft is bijgevoegd zodat u direct vanuit 
-                uw inbox aan de slag kunt.
+                {managerEmail} heeft een nieuwe vacatureaanvraag ingediend ter
+                beoordeling. Alles wat u nodig heeft is bijgevoegd zodat u
+                direct vanuit uw inbox aan de slag kunt.
               </p>
             </div>
 
@@ -302,7 +305,7 @@ export function ForwardToRecruiter({
         </div>
       )}
 
-      <div className="flex items-center justify-between pt-2 pb-8">
+      <div className="flex items-center justify-end gap-3 pt-2 pb-8">
         {onBack && (
           <button
             type="button"
@@ -313,17 +316,15 @@ export function ForwardToRecruiter({
           </button>
         )}
 
-        <div className="ml-auto">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="h-12 rounded-xl px-8 text-[15px] font-semibold text-white transition hover:bg-[#0f1623] disabled:cursor-not-allowed disabled:opacity-50"
-            style={{ backgroundColor: 'var(--color-blue)' }}
-          >
-            {isSubmitting ? "Verzenden..." : "Doorsturen naar recruiter"}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="h-12 rounded-xl px-8 text-[15px] font-semibold text-white transition hover:bg-[#0f1623] disabled:cursor-not-allowed disabled:opacity-50"
+          style={{ backgroundColor: "var(--color-blue)" }}
+        >
+          {isSubmitting ? "Verzenden..." : "Doorsturen naar recruiter"}
+        </button>
       </div>
     </div>
   );
