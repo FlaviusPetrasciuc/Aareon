@@ -4,7 +4,7 @@ import { CopilotKit } from "@copilotkit/react-core";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <CopilotKit runtimeUrl="/api/copilotkit">
+    <CopilotKit runtimeUrl="/api/copilotkit" enableInspector={false}>
       {children}
     </CopilotKit>
   );

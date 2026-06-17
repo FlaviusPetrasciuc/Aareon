@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { isAllowedAareonEmail } from "@/lib/aareonAccess";
 import Navbar from "@/components/globals/Navbar";
 
-const approvalTemplateUrl = "/documents/Approval%20Directors%20from%20for%20managers.pdf";
+const approvalTemplateUrl =
+  "/documents/Approval%20Directors%20from%20for%20managers.pdf";
 
 type ApprovalChoice = "yes" | "no" | null;
 
@@ -17,6 +18,7 @@ type StoredApprovalFile = {
 
 export default function ApprovalValidationPage() {
   const router = useRouter();
+
   const [choice, setChoice] = useState<ApprovalChoice>(null);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [approvalFileName, setApprovalFileName] = useState("");
@@ -30,11 +32,29 @@ export default function ApprovalValidationPage() {
       return;
     }
 
+    const savedChoice =
+      (localStorage.getItem("aareonApprovalStatus") as ApprovalChoice) || null;
+
+    if (savedChoice === "yes" || savedChoice === "no") {
+      setChoice(savedChoice);
+    }
+
+    const savedApprovalPdf = localStorage.getItem("approvalPdf");
+
+    if (savedApprovalPdf) {
+      try {
+        const parsed = JSON.parse(savedApprovalPdf) as StoredApprovalFile;
+        setApprovalFileName(parsed.fileName || "");
+      } catch {
+        localStorage.removeItem("approvalPdf");
+      }
+    }
   }, [router]);
 
   function selectApprovalStatus(nextChoice: Exclude<ApprovalChoice, null>) {
     setChoice(nextChoice);
     localStorage.setItem("aareonApprovalStatus", nextChoice);
+    setApprovalFileError("");
 
     if (nextChoice === "yes") {
       setShowApprovalModal(false);
@@ -42,46 +62,84 @@ export default function ApprovalValidationPage() {
       return;
     }
 
+    localStorage.removeItem("approvalPdf");
+    setApprovalFileName("");
+
     setShowApprovalModal(true);
     document.cookie = "aareon_approval=; path=/; max-age=0";
   }
 
   function continueToIntake() {
     if (choice !== "yes") return;
+
+    const savedApprovalPdf = localStorage.getItem("approvalPdf");
+
+    if (!savedApprovalPdf) {
+      setApprovalFileError(
+        "Upload eerst het goedkeuringsdocument voordat u verdergaat."
+      );
+      return;
+    }
+
     router.push("/basics");
   }
 
-  async function handleApprovalFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleApprovalFileChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
     const file = e.target.files?.[0];
 
     setApprovalFileError("");
     setApprovalFileName("");
-    localStorage.removeItem("aareonApprovalPdf");
+    localStorage.removeItem("approvalPdf");
 
     if (!file) return;
 
     if (file.type !== "application/pdf") {
       e.target.value = "";
-      setApprovalFileError("Please upload a PDF file only.");
+      setApprovalFileError("Upload uitsluitend een PDF-bestand.");
       return;
     }
 
-    const buffer = await file.arrayBuffer();
-    const bytes = new Uint8Array(buffer);
-    let binary = "";
+    try {
+      const reader = new FileReader();
 
-    bytes.forEach((byte) => {
-      binary += String.fromCharCode(byte);
-    });
+      reader.onload = () => {
+        try {
+          const result = String(reader.result);
+          const base64 = result.split(",")[1];
 
-    const storedFile: StoredApprovalFile = {
-      fileName: file.name,
-      contentType: file.type,
-      base64: btoa(binary),
-    };
+          const storedFile: StoredApprovalFile = {
+            fileName: file.name,
+            contentType: file.type || "application/pdf",
+            base64,
+          };
 
-    localStorage.setItem("aareonApprovalPdf", JSON.stringify(storedFile));
-    setApprovalFileName(file.name);
+          localStorage.setItem("approvalPdf", JSON.stringify(storedFile));
+          setApprovalFileName(file.name);
+          setApprovalFileError("");
+        } catch {
+          e.target.value = "";
+          setApprovalFileName("");
+          localStorage.removeItem("approvalPdf");
+          setApprovalFileError(
+            "Dit PDF-bestand is te groot om op te slaan. Upload een kleiner PDF-bestand."
+          );
+        }
+      };
+
+      reader.onerror = () => {
+        setApprovalFileError(
+          "Het geselecteerde PDF-bestand kon niet worden gelezen."
+        );
+      };
+
+      reader.readAsDataURL(file);
+    } catch {
+      setApprovalFileError(
+        "Het geselecteerde PDF-bestand kon niet worden gelezen."
+      );
+    }
   }
 
   return (
@@ -91,31 +149,36 @@ export default function ApprovalValidationPage() {
       <section className="mx-auto max-w-5xl px-5 py-8 sm:px-8 lg:py-14">
         <div className="min-w-0">
           <div className="mx-auto mb-8 flex max-w-3xl flex-wrap items-center justify-center gap-3 text-center text-xs font-semibold uppercase tracking-[0.18em] text-aareon-body/60 sm:justify-start sm:text-left">
-            <span className="text-aareon-bright">Email verified</span>
+            <span className="text-aareon-bright">E-mail geverifieerd</span>
             <span aria-hidden="true">/</span>
-            <span className="text-aareon-headline">Approval validation</span>
+            <span className="text-aareon-headline">
+              Goedkeuringscontrole
+            </span>
             <span aria-hidden="true">/</span>
-            <span>AI intake</span>
+            <span>AI-intake</span>
           </div>
 
           <div className="mx-auto max-w-3xl text-center sm:text-left">
             <p className="mb-4 font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-aareon-bright">
-              Approval checkpoint
+              Goedkeuringscontrole
             </p>
 
             <h1 className="font-title text-[clamp(38px,6vw,68px)] italic leading-[1.02] text-aareon-headline">
-              Confirm director approval before creating a new vacancy.
+              Bevestig de goedkeuring van de directeur voordat u een nieuwe
+              vacature aanmaakt.
             </h1>
 
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-aareon-body sm:mx-0">
-              Aareon requires director approval before a manager can request a new job posting and start a hiring process.
-              Confirm your approval status below to continue.
+              Aareon vereist goedkeuring van de directeur voordat een manager
+              een nieuwe vacature kan aanvragen en een wervingsproces kan
+              starten. Bevestig hieronder uw goedkeuringsstatus om verder te
+              gaan.
             </p>
           </div>
 
           <fieldset className="mx-auto mt-10 max-w-4xl">
             <legend className="mb-4 text-center text-sm font-semibold text-aareon-headline sm:text-left">
-              Do you already have approval from the directors?
+              Heeft u al goedkeuring van de directie ontvangen?
             </legend>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -140,10 +203,11 @@ export default function ApprovalValidationPage() {
                 <span className="flex items-start justify-between gap-5">
                   <span>
                     <span className="block text-lg font-semibold text-aareon-headline">
-                      Yes, approval is already available
+                      Ja, de goedkeuring is reeds ontvangen
                     </span>
                     <span className="mt-2 block text-sm leading-6 text-aareon-body/75">
-                      Continue to the AI interviewer and answer the vacancy intake questions.
+                      Upload het goedkeuringsdocument en ga daarna verder naar
+                      de AI-interviewer.
                     </span>
                   </span>
 
@@ -183,10 +247,12 @@ export default function ApprovalValidationPage() {
                 <span className="flex items-start justify-between gap-5">
                   <span>
                     <span className="block text-lg font-semibold text-aareon-headline">
-                      No, I need to request approval first
+                      Nee, ik moet eerst goedkeuring aanvragen
                     </span>
                     <span className="mt-2 block text-sm leading-6 text-aareon-body/75">
-                      Complete the approval request form first. The AI interviewer will remain closed until this request is submitted.
+                      Vul eerst het goedkeuringsaanvraagformulier in. De
+                      AI-interviewer blijft gesloten totdat deze aanvraag is
+                      ingediend.
                     </span>
                   </span>
 
@@ -206,12 +272,17 @@ export default function ApprovalValidationPage() {
 
           {choice === "yes" && (
             <div className="mx-auto mt-6 max-w-4xl rounded-lg border border-aareon-stone bg-white p-5 shadow-sm">
-              <label htmlFor="approvalPdf" className="block text-sm font-semibold text-aareon-headline">
-                Add approval PDF
+              <label
+                htmlFor="approvalPdf"
+                className="block text-sm font-semibold text-aareon-headline"
+              >
+                Upload goedgekeurd directiedocument (verplicht)
               </label>
 
               <p className="mt-1 text-sm leading-6 text-aareon-body/70">
-                Optional. If you add the approval document, it will be sent together with the confirmation email.
+                Een goedgekeurd PDF-document van de directie is vereist om verder te
+                gaan. Zonder dit document kan de vacatureaanvraag niet worden
+                voortgezet.
               </p>
 
               <input
@@ -219,15 +290,20 @@ export default function ApprovalValidationPage() {
                 type="file"
                 accept="application/pdf,.pdf"
                 onChange={handleApprovalFileChange}
+                required
                 className="mt-4 block w-full rounded-lg border border-aareon-stone bg-aareon-sand px-4 py-3 text-sm text-aareon-body file:mr-4 file:rounded-md file:border-0 file:bg-aareon-blue file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
               />
 
               {approvalFileName && (
-                <p className="mt-2 text-xs font-medium text-aareon-bright">{approvalFileName}</p>
+                <p className="mt-2 text-xs font-medium text-aareon-bright">
+                  {approvalFileName}
+                </p>
               )}
 
               {approvalFileError && (
-                <p className="mt-2 text-xs font-semibold text-aareon-coral">{approvalFileError}</p>
+                <p className="mt-2 text-xs font-semibold text-aareon-coral">
+                  {approvalFileError}
+                </p>
               )}
             </div>
           )}
@@ -239,7 +315,7 @@ export default function ApprovalValidationPage() {
               disabled={choice !== "yes"}
               className="inline-flex min-h-12 items-center justify-center rounded-lg bg-aareon-blue px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a1d8a] hover:shadow-[0_12px_24px_rgba(5,17,99,0.18)] focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-aareon-body/30 disabled:shadow-none"
             >
-              Continue to AI interviewer
+              Doorgaan naar AI-interviewer
             </button>
 
             <a
@@ -248,7 +324,7 @@ export default function ApprovalValidationPage() {
               rel="noreferrer"
               className="inline-flex min-h-12 items-center justify-center rounded-lg border border-aareon-stone bg-white px-6 py-3 text-sm font-semibold text-aareon-headline shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-aareon-bright hover:text-aareon-bright hover:shadow-[0_10px_24px_rgba(8,19,38,0.06)] focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2"
             >
-              View approval document example
+              Voorbeeld van goedkeuringsdocument bekijken
             </a>
           </div>
         </div>
@@ -262,14 +338,22 @@ export default function ApprovalValidationPage() {
           aria-labelledby="approval-required-title"
         >
           <div className="w-full max-w-lg rounded-lg border border-aareon-stone bg-white p-6 text-center shadow-[0_24px_80px_rgba(8,19,38,0.22)] animate-[modalIn_220ms_ease-out] sm:p-8">
-            <div className="mx-auto mb-5 h-1 w-16 rounded-full bg-aareon-bright" aria-hidden="true" />
+            <div
+              className="mx-auto mb-5 h-1 w-16 rounded-full bg-aareon-bright"
+              aria-hidden="true"
+            />
 
-            <h2 id="approval-required-title" className="text-2xl font-semibold text-aareon-headline">
-              Approval is required before you can continue.
+            <h2
+              id="approval-required-title"
+              className="text-2xl font-semibold text-aareon-headline"
+            >
+              Goedkeuring is vereist voordat u verder kunt gaan.
             </h2>
 
             <p className="mt-4 text-sm leading-6 text-aareon-body/78">
-              Please complete the approval request form first. The recruiter will receive your request and guide the next approval steps with the directors.
+              Vul eerst het goedkeuringsaanvraagformulier in. De recruiter
+              ontvangt uw aanvraag en begeleidt de verdere goedkeuringsstappen
+              met de directie.
             </p>
 
             <button
@@ -277,7 +361,7 @@ export default function ApprovalValidationPage() {
               onClick={() => router.push("/approval-request")}
               className="mt-7 inline-flex min-h-11 items-center justify-center rounded-lg bg-aareon-blue px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a1d8a] hover:shadow-[0_12px_24px_rgba(5,17,99,0.18)] focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2"
             >
-              Continue
+              Doorgaan
             </button>
           </div>
         </div>

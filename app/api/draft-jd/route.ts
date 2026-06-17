@@ -1,7 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest } from 'next/server';
 
-function buildPrompt(basics: Record<string, unknown>): string {
+type DraftStyle = 'standard' | 'extensive' | 'short' | 'informal';
+
+function buildPrompt(basics: Record<string, unknown>, style: DraftStyle): string {
   const jobTitle = (basics.jobTitle as string) || 'this role';
   const department = (basics.department as string) || '';
   const location = (basics.location as string) || '';
@@ -16,9 +18,7 @@ function buildPrompt(basics: Record<string, unknown>): string {
   const niceToHaves = (basics.niceToHaves as string) || '';
   const additionalDetails = (basics.additionalDetails as string) || '';
 
-  return `You are an expert HR copywriter for Aareon, a European PropTech and SaaS company headquartered in the Netherlands. Write a professional job description for the following position.
-
-Job details:
+  const jobDetails = `Job details:
 - Title: ${jobTitle}
 ${department ? `- Department: ${department}` : ''}
 ${location ? `- Location: ${location}` : ''}
@@ -28,27 +28,108 @@ ${salaryRange ? `- Salary: ${salaryRange}` : ''}
 ${education ? `- Education requirement: ${education}` : ''}
 ${mustHaves ? `- Must-haves: ${mustHaves}` : ''}
 ${niceToHaves ? `- Nice-to-haves: ${niceToHaves}` : ''}
-${additionalDetails ? `- Additional details: ${additionalDetails}` : ''}
+${additionalDetails ? `- Additional details: ${additionalDetails}` : ''}`;
 
-Output the job description using EXACTLY these section markers in this order. No preamble, no text before [SUMMARY]:
+  const markers = `Output the job description using EXACTLY these section markers in this order. Write the ENTIRE job description in Dutch (Nederlands). All content under each marker must be written in Dutch. No preamble, no text before [SUMMARY]:`;
+
+  if (style === 'short') {
+    return `You are an expert HR copywriter for Aareon, a European PropTech and SaaS company. Write a concise, to-the-point job description in Dutch (Nederlands).
+
+${jobDetails}
+
+${markers}
 
 [SUMMARY]
-2-3 sentences describing the role and its business impact at Aareon.
+1-2 sentences in Dutch — role and main purpose only.
 
 [RESPONSIBILITIES]
-5-7 key responsibilities, each on its own line prefixed with •
+3-4 core responsibilities in Dutch, each on its own line prefixed with •
 
 [REQUIREMENTS]
-5-6 required qualifications (draw from must-haves and education level), each on its own line prefixed with •
+3-4 must-have qualifications in Dutch, each on its own line prefixed with •
 
 [BENEFITS]
-4-5 benefits Aareon offers${salaryRange ? ` (include salary range: ${salaryRange})` : ''}, each on its own line prefixed with •
+2-3 key benefits Aareon offers in Dutch${salaryRange ? ` (include salary range: ${salaryRange})` : ''}, each on its own line prefixed with •
 
-Write in a direct, professional tone. Output only the section markers and content — nothing else.`;
+Be brief and direct. Output only the section markers and content in Dutch — nothing else.`;
+  }
+
+  if (style === 'extensive') {
+    return `You are an expert HR copywriter for Aareon, a European PropTech and SaaS company. Write a comprehensive, in-depth job description in Dutch (Nederlands).
+
+${jobDetails}
+
+${markers}
+
+[SUMMARY]
+4-5 sentences in Dutch — rich overview of the role, its strategic importance, team context, and candidate impact.
+
+[RESPONSIBILITIES]
+10-12 detailed responsibilities in Dutch, each on its own line prefixed with •. Include day-to-day tasks and long-term ownership areas.
+
+[REQUIREMENTS]
+8-10 qualifications in Dutch (must-haves, nice-to-haves, education), each on its own line prefixed with •. Clearly separate hard skills, soft skills, and experience levels.
+
+[BENEFITS]
+6-8 benefits Aareon offers in Dutch${salaryRange ? ` (include salary range: ${salaryRange})` : ''}, each on its own line prefixed with •. Include culture, growth opportunities, and perks.
+
+Write in a compelling tone in Dutch that sells the role. Output only the section markers and content in Dutch — nothing else.`;
+  }
+
+  if (style === 'informal') {
+    return `You are an HR copywriter for Aareon, a European PropTech and SaaS company. Write a friendly, approachable job description in Dutch (Nederlands) that feels human and welcoming — not corporate.
+
+${jobDetails}
+
+${markers}
+
+[SUMMARY]
+2-3 sentences in Dutch in a warm, conversational tone. Talk directly to the candidate using informal Dutch pronouns ("je" / "jij" / "jouw").
+
+[RESPONSIBILITIES]
+5-7 responsibilities in Dutch written casually, each on its own line prefixed with •. Use plain language, avoid jargon.
+
+[REQUIREMENTS]
+4-6 qualifications in Dutch in a non-intimidating way, each on its own line prefixed with •. Lead with what matters most, not a laundry list.
+
+[BENEFITS]
+4-5 benefits in Dutch${salaryRange ? ` (include salary range: ${salaryRange})` : ''}, each on its own line prefixed with •. Sound genuine, not like a PR brochure.
+
+Keep it human and friendly. Output only the section markers and content in Dutch — nothing else.`;
+  }
+
+  return `You are an expert HR copywriter for Aareon, a European PropTech and SaaS company headquartered in the Netherlands. Write a professional job description in Dutch (Nederlands) for the following position.
+
+${jobDetails}
+
+${markers}
+
+[SUMMARY]
+2-3 sentences in Dutch describing the role and its business impact at Aareon.
+
+[RESPONSIBILITIES]
+5-7 key responsibilities in Dutch, each on its own line prefixed with •
+
+[REQUIREMENTS]
+5-6 required qualifications in Dutch (draw from must-haves and education level), each on its own line prefixed with •
+
+[BENEFITS]
+4-5 benefits Aareon offers in Dutch${salaryRange ? ` (include salary range: ${salaryRange})` : ''}, each on its own line prefixed with •
+
+Write in a direct, professional tone in Dutch. Output only the section markers and content in Dutch — nothing else.`;
 }
 
+const maxTokens: Record<DraftStyle, number> = {
+  short: 1000,
+  standard: 2000,
+  extensive: 4000,
+  informal: 2000,
+};
+
 export async function POST(req: NextRequest) {
-  const basics = await req.json() as Record<string, unknown>;
+  const body = await req.json() as Record<string, unknown>;
+  const { style, ...basics } = body;
+  const draftStyle: DraftStyle = (style as DraftStyle) || 'standard';
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -58,8 +139,8 @@ export async function POST(req: NextRequest) {
       try {
         const s = client.messages.stream({
           model: process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6',
-          max_tokens: 2000,
-          messages: [{ role: 'user', content: buildPrompt(basics) }],
+          max_tokens: maxTokens[draftStyle],
+          messages: [{ role: 'user', content: buildPrompt(basics, draftStyle) }],
         });
 
         for await (const chunk of s) {

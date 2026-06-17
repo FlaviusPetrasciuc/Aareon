@@ -1,4 +1,17 @@
+import { getTestMessageUrl } from "nodemailer";
+
 export const AAREON_EMAIL_DOMAINS = ["gmail.com", "aareon.nl"];
+
+const ALLOWED_EMAILS = [
+  "niels.benjamins@aareon.nl",
+  "roy.boelens@aareon.nl",
+  "marcel.vrieling@aareon.nl",
+  "arjen.lok@aareon.nl",
+  "ria.feddema@aareon.nl",
+  "sjoerd.meertens@aareon.nl",
+  "daniel.hofman@aareon.nl",
+  "catvika922@gmail.com"
+];
 
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -6,11 +19,5 @@ export function normalizeEmail(email: string): string {
 
 export function isAllowedAareonEmail(email: string): boolean {
   const normalized = normalizeEmail(email);
-  const parts = normalized.split("@");
-
-  if (parts.length !== 2 || !parts[0] || !parts[1]) {
-    return false;
-  }
-
-  return AAREON_EMAIL_DOMAINS.includes(parts[1]);
+  return ALLOWED_EMAILS.includes(normalized);
 }
