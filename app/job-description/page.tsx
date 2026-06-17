@@ -125,7 +125,9 @@ export default function JobDescriptionPage() {
       const final = parseSections(full);
       setForm(final);
       saveJobDescription(final);
-    } catch { /* user can retry */ } finally {
+    } catch(error) { 
+        console.error("Error generating job description", error);
+    } finally {
       setIsDrafting(false);
     }
   };

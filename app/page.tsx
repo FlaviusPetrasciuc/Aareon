@@ -5,16 +5,15 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AAREON_EMAIL_DOMAINS, isAllowedAareonEmail, normalizeEmail } from "@/lib/aareonAccess";
 import LoadingSpinner from "@/components/globals/LoadingSpinner";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [touched, setTouched] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const isValid = isAllowedAareonEmail(email) && password.length >= 8 && password === confirmPassword;
+  const isValid = isAllowedAareonEmail(email);
   const showError = touched && !isValid;
   const allowedDomains = AAREON_EMAIL_DOMAINS.map((domain) => `@${domain}`).join(" or ");
 
@@ -22,29 +21,10 @@ export default function LoginPage() {
     e.preventDefault();
     setTouched(true);
 
-    if (!isValid) {
-      alert(`Please enter a valid ${allowedDomains} email address.`);
-
-      return;
-    }
+    if (!isValid) return;
     setLoading(true);
 
     const normalizedEmail = normalizeEmail(email);
-
-    const res = await fetch('/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: normalizedEmail, password }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error ?? 'Something went wrong');
-      setLoading(false);
-      return;
-    }
-
     localStorage.setItem("managerEmail", normalizedEmail);
     localStorage.removeItem("aareonApprovalStatus");
     document.cookie = `aareon_session=${normalizedEmail}; path=/; max-age=86400`;
@@ -103,10 +83,10 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
 
           <h2 className="font-title text-[28px] font-normal text-aareon-headline leading-tight mb-2 italic">
-            Sign in to<br />your workspace
+            Inloggen bij<br />uw werkruimte
           </h2>
           <p className="text-sm text-aareon-body font-light mb-9 leading-relaxed font-body">
-            Enter your Aareon corporate email to start the approval validation.
+            Voer uw Aareon-zakelijk e-mailadres in om de goedkeuringsvalidatie te starten.
           </p>
 
           <LoadingSpinner isVisible={loading} />
@@ -117,14 +97,14 @@ export default function LoginPage() {
                 htmlFor="email"
                 className="block font-mono text-[10px] font-medium tracking-[0.15em] uppercase text-aareon-body mb-2"
               >
-                Company email
+                Zakelijk e-mailadres
               </label>
               <input
                 id="email"
                 type="email"
                 autoFocus
                 autoComplete="email"
-                placeholder="you@gmail.com"
+                placeholder=" voorbeeld@aareon.nl"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={() => setTouched(true)}
@@ -137,29 +117,10 @@ export default function LoginPage() {
               />
               {showError && (
                 <p className="font-body text-xs text-aareon-coral mt-1.5">
-                  Please enter a valid {allowedDomains} email address.
+                  Voer een geldig {allowedDomains} e-mailadres in.
                 </p>
               )}
             </div>
-
-            {/* Password */}
-            <div className="mb-5">
-              <label
-                htmlFor="password"
-                className="block font-mono text-[10px] font-medium tracking-[0.15em] uppercase text-aareon-body mb-2"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 font-body text-sm font-light text-aareon-headline bg-white rounded-lg outline-none transition-all border-[1.5px] border-aareon-stone focus:border-aareon-bright focus:shadow-[0_0_0_3px_rgba(8,109,251,0.12)]"
-              />
-            </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -168,18 +129,20 @@ export default function LoginPage() {
               {loading ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <>Continue <span>→</span></>
+                <>Doorgaan <span>→</span></>
               )}
             </button>
           </form>
-
-          {/* Footer */}
-          <div className="mt-4 pt-2 border-t border-aareon-stone text-center">
-            <span className="font-body text-[11px] text-aareon-body/60 cursor-pointer hover:text-aareon-body transition-colors">
-              Privacy policy
+          
+          <div className="mt-4 text-center">
+            <span className="font-body text-[13px] text-aareon-body/70">
+              Heeft u nog geen account?{" "}
+              <Link href="/register" className="font-medium text-aareon-blue hover:text-aareon-bright transition-colors">
+                Account aanmaken
+              </Link>
             </span>
           </div>
-
+        
         </div>
       </div>
     </div>

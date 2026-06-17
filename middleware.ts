@@ -2,14 +2,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Pages that don't require authentication
-const PUBLIC_PATHS = ["/"];
-const APPROVAL_REQUIRED_PATHS = ["/basics", "/job-description", "/overview", "/forward-to-recruiter"];
+const PUBLIC_PATHS = ["/", "/register"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public paths through
-  if (PUBLIC_PATHS.includes(pathname)) {
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
 
@@ -29,11 +28,6 @@ export function middleware(request: NextRequest) {
   const isLoggedIn = request.cookies.get("aareon_session");
   if (!isLoggedIn) {
     return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  const hasApproval = request.cookies.get("aareon_approval")?.value === "granted";
-  if (APPROVAL_REQUIRED_PATHS.some((p) => pathname.startsWith(p)) && !hasApproval) {
-    return NextResponse.redirect(new URL("/approval", request.url));
   }
 
   return NextResponse.next();
