@@ -8,10 +8,10 @@ import { IntakeSession } from "@/types/intake";
 import Navbar from "@/components/globals/Navbar";
 
 const STEPS = [
-  "Basics",
-  "Job description",
-  "Overview",
-  "Forward to recruiter",
+  "Basis",
+  "Functieomschrijving",
+  "Overzicht",
+  "Doorsturen naar recruiter",
 ];
 
 const CURRENT_STEP = 4;
@@ -49,15 +49,15 @@ export default function ForwardToRecruiterPage() {
           <div className="mb-10 flex items-start justify-between">
             <div>
               <p className="mb-3 text-sm text-gray-500">
-                Forward to recruiter · 4/4
+                Doorsturen naar recruiter · 4/4
               </p>
 
               <h1 className="text-5xl font-serif tracking-tight text-[#172033]">
-                Create new job posting
+                Nieuwe vacature aanmaken
               </h1>
 
               <p className="mt-3 text-lg text-gray-500">
-                Four steps — about 3 minutes
+                Vier stappen — ongeveer 3 minuten
               </p>
             </div>
           </div>

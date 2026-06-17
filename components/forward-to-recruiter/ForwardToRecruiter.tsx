@@ -97,11 +97,11 @@ export function ForwardToRecruiter({
 
         <div className="space-y-2">
           <h3 className="font-title text-3xl text-[#172033]">
-            Successfully sent
+            Succesvol verzonden
           </h3>
 
           <p className="max-w-sm text-[15px] text-gray-500">
-            Both emails have been sent. The recruiter will be in touch shortly.
+            Beide e-mails zijn verzonden. De recruiter neemt binnenkort contact op.
           </p>
         </div>
 
@@ -145,19 +145,18 @@ export function ForwardToRecruiter({
 
         <div>
           <p className="text-[15px] font-semibold text-[#15803d]">
-            Ready to forward
+            Klaar om door te sturen
           </p>
 
           <p className="mt-0.5 text-sm text-[#16a34a]/80">
-            Submitting will send both emails automatically to the hiring manager
-            and the recruiter.
+            Bij het verzenden worden beide e-mails automatisch verstuurd naar de hiring manager en de recruiter.
           </p>
         </div>
       </div>
 
       <div className="space-y-5">
         <p className="text-[13px] font-semibold uppercase tracking-widest text-gray-400">
-          Emails sent on submit
+          E-mails verzonden bij indienen
         </p>
 
         <div className="overflow-hidden rounded-xl border border-[#d6d3d1] bg-white">
@@ -169,7 +168,7 @@ export function ForwardToRecruiter({
 
               <div>
                 <p className="text-[13px] font-semibold text-[#172033]">
-                  Confirmation to hiring manager
+                  Bevestiging aan hiring manager
                 </p>
 
                 <p className="text-[12px] text-gray-400">
@@ -182,32 +181,31 @@ export function ForwardToRecruiter({
             </div>
 
             <span className="rounded-full border border-[#bbf7d0] bg-[#f0fdf4] px-3 py-1 text-[11px] font-semibold text-[#15803d]">
-              {attachmentCount} attachment{attachmentCount === 1 ? "" : "s"}
+              {attachmentCount} bijlage{attachmentCount === 1 ? "" : "s"}
             </span>
           </div>
 
           <div className="space-y-4 px-5 py-4">
             <div className="space-y-1 rounded-xl border border-[#d6d3d1] bg-[#f3f2ef] px-4 py-3">
               <p className="text-[13px] font-semibold text-[#172033]">
-                Your requisition has been submitted: {session.jobTitle}
+                Uw aanvraag is ingediend: {session.jobTitle}
               </p>
 
               <p className="text-[13px] leading-relaxed text-gray-500">
-                Your job requisition has been successfully submitted to Bram
-                Feij. The intake PDF includes the questions, answers, and
-                AI-generated job description.
+                Uw vacatureaanvraag is succesvol ingediend bij Bram Feij. 
+                De intake-PDF bevat de vragen, antwoorden en de AI-gegenereerde functieomschrijving.
               </p>
             </div>
 
             <AttachmentPill
               name={`intake-${slug}.pdf`}
-              description="Questions, answers, and AI-generated job description"
+              description="Vragen, antwoorden en AI-gegenereerde functieomschrijving"
             />
 
             {hasApprovalPdf && (
               <AttachmentPill
                 name="approval.pdf"
-                description="Approval document attached earlier"
+                description="Goedkeuringsdocument eerder bijgevoegd"
               />
             )}
           </div>
@@ -222,7 +220,7 @@ export function ForwardToRecruiter({
 
               <div>
                 <p className="text-[13px] font-semibold text-[#172033]">
-                  Action packet to recruiter
+                  Actiepakket voor recruiter
                 </p>
 
                 <p className="text-[12px] text-gray-400">
@@ -230,26 +228,26 @@ export function ForwardToRecruiter({
                   <span className="font-medium text-[#172033]">
                     {RECRUITER_EMAIL}
                   </span>
-                  <span className="ml-2 text-gray-300">— fixed recipient</span>
+                  <span className="ml-2 text-gray-300">— vaste ontvanger</span>
                 </p>
               </div>
             </div>
 
             <span className="rounded-full border border-[#fecaca] bg-[#fef2f2] px-3 py-1 text-[11px] font-semibold text-[#ef4444]">
-              {attachmentCount} attachment{attachmentCount === 1 ? "" : "s"}
+              {attachmentCount} bijlage{attachmentCount === 1 ? "" : "s"}
             </span>
           </div>
 
           <div className="space-y-4 px-5 py-4">
             <div className="space-y-1 rounded-xl border border-[#d6d3d1] bg-[#f3f2ef] px-4 py-3">
               <p className="text-[13px] font-semibold text-[#172033]">
-                New requisition ready for review — {session.jobTitle}
+                Nieuwe aanvraag klaar voor beoordeling — {session.jobTitle}
               </p>
 
               <p className="text-[13px] leading-relaxed text-gray-500">
-                {managerEmail} has submitted a new job requisition for your
-                review. Everything you need is attached so you can get started
-                directly from your inbox.
+                {managerEmail} heeft een nieuwe vacatureaanvraag ingediend ter beoordeling. 
+                Alles wat u nodig heeft is bijgevoegd zodat u direct vanuit 
+                uw inbox aan de slag kunt.
               </p>
             </div>
 
@@ -257,7 +255,7 @@ export function ForwardToRecruiter({
               <div className="overflow-hidden rounded-xl border border-[#d6d3d1]">
                 <div className="border-b border-[#d6d3d1] bg-[#f3f2ef] px-4 py-2">
                   <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
-                    Intake answers included
+                    Intake-antwoorden inbegrepen
                   </p>
                 </div>
 
@@ -284,13 +282,13 @@ export function ForwardToRecruiter({
             <div className="space-y-2">
               <AttachmentPill
                 name={`intake-${slug}.pdf`}
-                description="Questions, answers, and AI-generated job description"
+                description="Vragen, antwoorden en AI-gegenereerde functieomschrijving"
               />
 
               {hasApprovalPdf && (
                 <AttachmentPill
                   name="approval.pdf"
-                  description="Approval document attached earlier"
+                  description="Goedkeuringsdocument eerder bijgevoegd"
                 />
               )}
             </div>
@@ -311,7 +309,7 @@ export function ForwardToRecruiter({
             onClick={onBack}
             className="h-12 rounded-xl border border-[#d6d3d1] bg-white px-6 text-[15px] font-medium text-[#172033] transition hover:bg-[#f3f2ef]"
           >
-            Back
+            Terug
           </button>
         )}
 
@@ -322,7 +320,7 @@ export function ForwardToRecruiter({
             disabled={isSubmitting}
             className="h-12 rounded-xl bg-[#172033] px-8 text-[15px] font-semibold text-white transition hover:bg-[#0f1623] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isSubmitting ? "Sending..." : "Forward to recruiter"}
+            {isSubmitting ? "Verzenden..." : "Doorsturen naar recruiter"}
           </button>
         </div>
       </div>

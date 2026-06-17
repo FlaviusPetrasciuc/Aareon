@@ -54,6 +54,7 @@ export default function ApprovalValidationPage() {
   function selectApprovalStatus(nextChoice: Exclude<ApprovalChoice, null>) {
     setChoice(nextChoice);
     localStorage.setItem("aareonApprovalStatus", nextChoice);
+    setApprovalFileError("");
 
     if (nextChoice === "yes") {
       setShowApprovalModal(false);
@@ -70,6 +71,16 @@ export default function ApprovalValidationPage() {
 
   function continueToIntake() {
     if (choice !== "yes") return;
+
+    const savedApprovalPdf = localStorage.getItem("approvalPdf");
+
+    if (!savedApprovalPdf) {
+      setApprovalFileError(
+        "Upload eerst het goedkeuringsdocument voordat u verdergaat."
+      );
+      return;
+    }
+
     router.push("/basics");
   }
 
@@ -86,7 +97,7 @@ export default function ApprovalValidationPage() {
 
     if (file.type !== "application/pdf") {
       e.target.value = "";
-      setApprovalFileError("Please upload a PDF file only.");
+      setApprovalFileError("Upload uitsluitend een PDF-bestand.");
       return;
     }
 
@@ -106,23 +117,28 @@ export default function ApprovalValidationPage() {
 
           localStorage.setItem("approvalPdf", JSON.stringify(storedFile));
           setApprovalFileName(file.name);
+          setApprovalFileError("");
         } catch {
           e.target.value = "";
           setApprovalFileName("");
           localStorage.removeItem("approvalPdf");
           setApprovalFileError(
-            "This PDF is too large to store. Please upload a smaller PDF."
+            "Dit PDF-bestand is te groot om op te slaan. Upload een kleiner PDF-bestand."
           );
         }
       };
 
       reader.onerror = () => {
-        setApprovalFileError("Could not read the selected PDF file.");
+        setApprovalFileError(
+          "Het geselecteerde PDF-bestand kon niet worden gelezen."
+        );
       };
 
       reader.readAsDataURL(file);
     } catch {
-      setApprovalFileError("Could not read the selected PDF file.");
+      setApprovalFileError(
+        "Het geselecteerde PDF-bestand kon niet worden gelezen."
+      );
     }
   }
 
@@ -133,34 +149,36 @@ export default function ApprovalValidationPage() {
       <section className="mx-auto max-w-5xl px-5 py-8 sm:px-8 lg:py-14">
         <div className="min-w-0">
           <div className="mx-auto mb-8 flex max-w-3xl flex-wrap items-center justify-center gap-3 text-center text-xs font-semibold uppercase tracking-[0.18em] text-aareon-body/60 sm:justify-start sm:text-left">
-            <span className="text-aareon-bright">Email verified</span>
+            <span className="text-aareon-bright">E-mail geverifieerd</span>
             <span aria-hidden="true">/</span>
             <span className="text-aareon-headline">
-              Approval validation
+              Goedkeuringscontrole
             </span>
             <span aria-hidden="true">/</span>
-            <span>AI intake</span>
+            <span>AI-intake</span>
           </div>
 
           <div className="mx-auto max-w-3xl text-center sm:text-left">
             <p className="mb-4 font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-aareon-bright">
-              Approval checkpoint
+              Goedkeuringscontrole
             </p>
 
             <h1 className="font-title text-[clamp(38px,6vw,68px)] italic leading-[1.02] text-aareon-headline">
-              Confirm director approval before creating a new vacancy.
+              Bevestig de goedkeuring van de directeur voordat u een nieuwe
+              vacature aanmaakt.
             </h1>
 
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-aareon-body sm:mx-0">
-              Aareon requires director approval before a manager can request a
-              new job posting and start a hiring process. Confirm your approval
-              status below to continue.
+              Aareon vereist goedkeuring van de directeur voordat een manager
+              een nieuwe vacature kan aanvragen en een wervingsproces kan
+              starten. Bevestig hieronder uw goedkeuringsstatus om verder te
+              gaan.
             </p>
           </div>
 
           <fieldset className="mx-auto mt-10 max-w-4xl">
             <legend className="mb-4 text-center text-sm font-semibold text-aareon-headline sm:text-left">
-              Do you already have approval from the directors?
+              Heeft u al goedkeuring van de directie ontvangen?
             </legend>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -185,11 +203,11 @@ export default function ApprovalValidationPage() {
                 <span className="flex items-start justify-between gap-5">
                   <span>
                     <span className="block text-lg font-semibold text-aareon-headline">
-                      Yes, approval is already available
+                      Ja, de goedkeuring is reeds ontvangen
                     </span>
                     <span className="mt-2 block text-sm leading-6 text-aareon-body/75">
-                      Continue to the AI interviewer and answer the vacancy
-                      intake questions.
+                      Upload het goedkeuringsdocument en ga daarna verder naar
+                      de AI-interviewer.
                     </span>
                   </span>
 
@@ -229,12 +247,12 @@ export default function ApprovalValidationPage() {
                 <span className="flex items-start justify-between gap-5">
                   <span>
                     <span className="block text-lg font-semibold text-aareon-headline">
-                      No, I need to request approval first
+                      Nee, ik moet eerst goedkeuring aanvragen
                     </span>
                     <span className="mt-2 block text-sm leading-6 text-aareon-body/75">
-                      Complete the approval request form first. The AI
-                      interviewer will remain closed until this request is
-                      submitted.
+                      Vul eerst het goedkeuringsaanvraagformulier in. De
+                      AI-interviewer blijft gesloten totdat deze aanvraag is
+                      ingediend.
                     </span>
                   </span>
 
@@ -258,12 +276,13 @@ export default function ApprovalValidationPage() {
                 htmlFor="approvalPdf"
                 className="block text-sm font-semibold text-aareon-headline"
               >
-                Add approval PDF
+                Upload goedgekeurd directiedocument (verplicht)
               </label>
 
               <p className="mt-1 text-sm leading-6 text-aareon-body/70">
-                Optional. If you add the approval document, it will be sent
-                together with the confirmation email.
+                Een goedgekeurd PDF-document van de directie is vereist om verder te
+                gaan. Zonder dit document kan de vacatureaanvraag niet worden
+                voortgezet.
               </p>
 
               <input
@@ -271,6 +290,7 @@ export default function ApprovalValidationPage() {
                 type="file"
                 accept="application/pdf,.pdf"
                 onChange={handleApprovalFileChange}
+                required
                 className="mt-4 block w-full rounded-lg border border-aareon-stone bg-aareon-sand px-4 py-3 text-sm text-aareon-body file:mr-4 file:rounded-md file:border-0 file:bg-aareon-blue file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
               />
 
@@ -295,7 +315,7 @@ export default function ApprovalValidationPage() {
               disabled={choice !== "yes"}
               className="inline-flex min-h-12 items-center justify-center rounded-lg bg-aareon-blue px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a1d8a] hover:shadow-[0_12px_24px_rgba(5,17,99,0.18)] focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-aareon-body/30 disabled:shadow-none"
             >
-              Continue to AI interviewer
+              Doorgaan naar AI-interviewer
             </button>
 
             <a
@@ -304,7 +324,7 @@ export default function ApprovalValidationPage() {
               rel="noreferrer"
               className="inline-flex min-h-12 items-center justify-center rounded-lg border border-aareon-stone bg-white px-6 py-3 text-sm font-semibold text-aareon-headline shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-aareon-bright hover:text-aareon-bright hover:shadow-[0_10px_24px_rgba(8,19,38,0.06)] focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2"
             >
-              View approval document example
+              Voorbeeld van goedkeuringsdocument bekijken
             </a>
           </div>
         </div>
@@ -327,13 +347,13 @@ export default function ApprovalValidationPage() {
               id="approval-required-title"
               className="text-2xl font-semibold text-aareon-headline"
             >
-              Approval is required before you can continue.
+              Goedkeuring is vereist voordat u verder kunt gaan.
             </h2>
 
             <p className="mt-4 text-sm leading-6 text-aareon-body/78">
-              Please complete the approval request form first. The recruiter
-              will receive your request and guide the next approval steps with
-              the directors.
+              Vul eerst het goedkeuringsaanvraagformulier in. De recruiter
+              ontvangt uw aanvraag en begeleidt de verdere goedkeuringsstappen
+              met de directie.
             </p>
 
             <button
@@ -341,7 +361,7 @@ export default function ApprovalValidationPage() {
               onClick={() => router.push("/approval-request")}
               className="mt-7 inline-flex min-h-11 items-center justify-center rounded-lg bg-aareon-blue px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a1d8a] hover:shadow-[0_12px_24px_rgba(5,17,99,0.18)] focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2"
             >
-              Continue
+              Doorgaan
             </button>
           </div>
         </div>
