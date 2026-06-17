@@ -9,6 +9,8 @@ import { Select } from '@/components/basics/Select';
 import { SegmentedControl } from '@/components/basics/SegmentedControl';
 import { Textarea } from '@/components/basics/Textarea';
 import Navbar from '@/components/globals/Navbar';
+import Stepper from '@/components/globals/Stepper';
+import PageHeader from '@/components/globals/PageHeader';
 import { createSession, saveSession } from "@/lib/session";
 interface FormData {
     jobTitle: string;
@@ -40,6 +42,28 @@ const STEPS = [
     'Overzicht',
     'Doorsturen naar recruiter',
 ];
+
+const STEP_ROUTES = [
+    '/basics',
+    '/job-description',
+    '/overview',
+    '/forward-to-recruiter',
+];
+
+const CHARACTER_LIMITS = {
+    jobTitle: 200,
+    salaryMin: 7,
+    salaryMax: 7,
+    bonusStructure: 200,
+    mustHaves: 500,
+    niceToHaves: 500,
+    shouldntHaves: 500,
+    additionalDetails: 500,
+} as const;
+
+const DEFAULT_TEXTAREA_LIMIT = 1000;
+const DEFAULT_INPUT_LIMIT = 255;
+
 const CURRENT_STEP = 1;
 
 const STORAGE_KEY = 'jobPostingFormData';
@@ -116,43 +140,86 @@ export default function CreateJobPostingPage() {
             newErrors.push({ field: 'employeeRequirements', message: 'Functie-eisen zijn verplicht' });
         }
 
+        const limitErrors = validateCharacterLimits(formData);
+        newErrors.push(...limitErrors);
+
         setErrors(newErrors);
         return newErrors.length === 0;
     };
 
+    const validateCharacterLimits = (data: FormData): FieldError[] => {
+        const errors: FieldError[] = [];
+
+        Object.keys(CHARACTER_LIMITS).forEach((key) => {
+            const fieldName = key as keyof FormData;
+            const value = data[fieldName] as string;
+            const limit = CHARACTER_LIMITS[fieldName as keyof typeof CHARACTER_LIMITS];
+
+            if (value && value.length > limit) {
+                const fieldLabels: Record<string, string> = {
+                    jobTitle: 'Functietitel',
+                    salaryMin: 'Minimum salaris',
+                    salaryMax: 'Maximum salaris',
+                    bonusStructure: 'Bonusstructuur',
+                    mustHaves: 'Verplichte eisen',
+                    niceToHaves: 'Pre-eisen',
+                    shouldntHaves: 'Bezwaar-eisen',
+                    additionalDetails: 'Aanvullende informatie'
+                };
+
+                errors.push({
+                    field: fieldName,
+                    message: `${fieldLabels[fieldName] || fieldName} mag niet meer dan ${limit} tekens bevatten (huidig: ${value.length})`
+                });
+            }
+        });
+
+        return errors;
+    };
+
+    const getCharacterInfo = (fieldName: keyof FormData): { count: number; limit: number } => {
+        const value = formData[fieldName] as string;
+        const limit = CHARACTER_LIMITS[fieldName as keyof typeof CHARACTER_LIMITS] ||
+            (fieldName === 'mustHaves' || fieldName === 'niceToHaves' ||
+                fieldName === 'shouldntHaves' || fieldName === 'additionalDetails'
+                ? DEFAULT_TEXTAREA_LIMIT : DEFAULT_INPUT_LIMIT);
+
+        return { count: value?.length || 0, limit };
+    };
+
     const handleNext = async () => {
-    const isValid = validateInput();
+        const isValid = validateInput();
 
-    if (!isValid) {
-        const firstErrorField = document.querySelector('[data-error-field]');
+        if (!isValid) {
+            const firstErrorField = document.querySelector('[data-error-field]');
 
-        if (firstErrorField) {
-            firstErrorField.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-            });
+            if (firstErrorField) {
+                firstErrorField.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                });
+            }
+
+            return;
         }
 
-        return;
-    }
+        saveToLocalStorage(formData);
 
-    saveToLocalStorage(formData);
+        const managerEmail =
+            localStorage.getItem("managerEmail") ||
+            "manager@aareon.nl";
 
-    const managerEmail =
-        localStorage.getItem("managerEmail") ||
-        "manager@aareon.nl";
+        const session = createSession(
+            formData.jobTitle,
+            managerEmail
+        );
 
-    const session = createSession(
-        formData.jobTitle,
-        managerEmail
-    );
+        saveSession(session);
 
-    saveSession(session);
+        console.log("Session created:", session);
 
-    console.log("Session created:", session);
-
-    router.push("/job-description");
-};
+        router.push("/job-description");
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -163,6 +230,13 @@ export default function CreateJobPostingPage() {
 
         if (type === 'checkbox') {
             newValue = (e.target as HTMLInputElement).checked;
+        } else {
+            const limit = CHARACTER_LIMITS[name as keyof typeof CHARACTER_LIMITS] ||
+                (e.target.tagName === 'TEXTAREA' ? DEFAULT_TEXTAREA_LIMIT : DEFAULT_INPUT_LIMIT);
+
+            if (value.length > limit) {
+                return;
+            }
         }
 
         setFormData(prev => {
@@ -182,56 +256,19 @@ export default function CreateJobPostingPage() {
             <main className="min-h-screen" style={{ backgroundColor: 'var(--color-sand)', color: 'var(--color-body)' }}>
                 <div className="mx-auto max-w-7xl px-8 py-8">
                     {/* Header */}
-                    <div className="mb-10 flex items-start justify-between">
-                        <div>
-                            <p className="mb-3 text-sm" style={{ color: 'var(--color-body)' }}>
-                                Basisinformatie · 1/4
-                            </p>
-
-                            <h1 className="text-5xl font-serif tracking-tight" style={{ color: 'var(--color-headline)' }}>
-                                Nieuwe vacature aanmaken
-                            </h1>
-
-                            <p className="mt-3 text-lg" style={{ color: 'var(--color-body)' }}>
-                                Vier stappen — ongeveer 3 minuten
-                            </p>
-                        </div>
-                    </div>
-
+                    <PageHeader 
+                        stepLabel="Basisinformatie"
+                        currentStep={CURRENT_STEP}
+                        totalSteps={STEPS.length}
+                        title="Nieuwe vacature aanmaken"
+                        subtitle="Vier stappen — ongeveer 5 minuten"
+                    />
+                    
                     {/* Stepper */}
-                    <div className="mb-10 flex items-center">
-                        {STEPS.map((step, index) => {
-                            const stepNumber = index + 1;
-                            const isDone = stepNumber < CURRENT_STEP;
-                            const isCurrent = stepNumber === CURRENT_STEP;
-
-                            return (
-                                <React.Fragment key={step}>
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className="flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium"
-                                            style={{
-                                                backgroundColor: isDone ? '#50B214' : isCurrent ? 'var(--color-blue)' : 'white',
-                                                borderColor: isDone ? '#50B214' : isCurrent ? 'var(--color-blue)' : 'var(--color-stone)',
-                                                color: isDone || isCurrent ? 'white' : 'var(--color-body)',
-                                            }}
-                                        >
-                                            {isDone ? '✓' : stepNumber}
-                                        </div>
-                                        <span
-                                            className="text-[15px]"
-                                            style={{ color: isCurrent ? 'var(--color-headline)' : 'var(--color-body)' }}
-                                        >
-                                            {step}
-                                        </span>
-                                    </div>
-                                    {index < STEPS.length - 1 && (
-                                        <div className="mx-5 h-px flex-1" style={{ backgroundColor: 'var(--color-stone)' }} />
-                                    )}
-                                </React.Fragment>
-                            );
-                        })}
-                    </div>
+                    <Stepper
+                        steps={STEPS}
+                        currentStep={CURRENT_STEP}
+                    />
 
                     {/* Form */}
                     <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'var(--color-stone)', backgroundColor: 'var(--color-sand)' }}>
@@ -244,6 +281,7 @@ export default function CreateJobPostingPage() {
                                     value={formData.jobTitle}
                                     onChange={handleInputChange}
                                     placeholder="e.g. Senior Frontend Engineer"
+                                    maxLength={CHARACTER_LIMITS.jobTitle}
                                     style={{
                                         borderColor: getFieldError('jobTitle') ? '#FF7F62' : undefined
                                     }}
@@ -253,6 +291,9 @@ export default function CreateJobPostingPage() {
                                         {getFieldError('jobTitle')}
                                     </p>
                                 )}
+                                <div className="mt-1 text-right text-xs" style={{ color: 'var(--color-body)' }}>
+                                    {getCharacterInfo('jobTitle').count}/{getCharacterInfo('jobTitle').limit}
+                                </div>
                             </div>
 
                             {/* Row */}
@@ -374,6 +415,7 @@ export default function CreateJobPostingPage() {
                                             value={formData.salaryMin}
                                             onChange={handleInputChange}
                                             placeholder="min"
+                                            maxLength={CHARACTER_LIMITS.salaryMin}
                                         />
 
                                         <span style={{ color: 'var(--color-body)' }}>—</span>
@@ -383,6 +425,7 @@ export default function CreateJobPostingPage() {
                                             value={formData.salaryMax}
                                             onChange={handleInputChange}
                                             placeholder="max"
+                                            maxLength={CHARACTER_LIMITS.salaryMax}
                                         />
                                     </div>
                                 </div>
@@ -430,8 +473,12 @@ export default function CreateJobPostingPage() {
                                 name='bonusStructure'
                                 value={formData.bonusStructure}
                                 onChange={handleInputChange}
-                                placeholder='bijv. 70/30 regeling (sales afdeling), Standaard Bonus (andere afdelingen)'
+                                placeholder='bijv. 70/30 regeling (sales afdeling), standaard Bonus (andere afdelingen)'
+                                maxLength={CHARACTER_LIMITS.bonusStructure}
                             />
+                            <div className="mt-1 text-right text-xs" style={{ color: 'var(--color-body)' }}>
+                                {getCharacterInfo('bonusStructure').count}/{getCharacterInfo('bonusStructure').limit}
+                            </div>
 
                             {/* Education level */}
                             <div data-error-field={getFieldError('education') ? 'education' : undefined}>
@@ -469,6 +516,7 @@ export default function CreateJobPostingPage() {
                                             value={formData.mustHaves}
                                             onChange={handleInputChange}
                                             placeholder="Bijv. Ervaring in sales, soft skills, vloeiend Nederlands en Engels, etc."
+                                            maxLength={CHARACTER_LIMITS.mustHaves}
                                             style={{
                                                 borderColor: getFieldError('mustHaves') ? '#FF7F62' : undefined
                                             }}
@@ -478,6 +526,9 @@ export default function CreateJobPostingPage() {
                                                 {getFieldError('mustHave')}
                                             </p>
                                         )}
+                                        <div className="mt-1 text-right text-xs" style={{ color: 'var(--color-body)' }}>
+                                            {getCharacterInfo('mustHaves').count}/{getCharacterInfo('mustHaves').limit}
+                                        </div>
                                     </div>
 
                                     <div>
@@ -487,7 +538,11 @@ export default function CreateJobPostingPage() {
                                             value={formData.niceToHaves}
                                             onChange={handleInputChange}
                                             placeholder="Bijv. Kennis van economie, ervaring met C++, etc."
+                                            maxLength={CHARACTER_LIMITS.niceToHaves}
                                         />
+                                        <div className="mt-1 text-right text-xs" style={{ color: 'var(--color-body)' }}>
+                                            {getCharacterInfo('niceToHaves').count}/{getCharacterInfo('niceToHaves').limit}
+                                        </div>
                                     </div>
 
                                     <div>
@@ -497,7 +552,11 @@ export default function CreateJobPostingPage() {
                                             value={formData.shouldntHaves}
                                             onChange={handleInputChange}
                                             placeholder="Bijv. Moeite met samenwerken, onwil om hulp te bieden, etc."
+                                            maxLength={CHARACTER_LIMITS.shouldntHaves}
                                         />
+                                        <div className="mt-1 text-right text-xs" style={{ color: 'var(--color-body)' }}>
+                                            {getCharacterInfo('shouldntHaves').count}/{getCharacterInfo('shouldntHaves').limit}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -509,7 +568,11 @@ export default function CreateJobPostingPage() {
                                     value={formData.additionalDetails}
                                     onChange={handleInputChange}
                                     placeholder="Bijv. Vermeld de werkcultuur, hoe een dag in het leven van iemand in deze functie eruitziet, etc."
+                                    maxLength={CHARACTER_LIMITS.additionalDetails}
                                 />
+                                <div className="mt-1 text-right text-xs" style={{ color: 'var(--color-body)' }}>
+                                    {getCharacterInfo('additionalDetails').count}/{getCharacterInfo('additionalDetails').limit}
+                                </div>
                             </div>
 
                             {/* Footer */}
@@ -530,7 +593,7 @@ export default function CreateJobPostingPage() {
                                     <button
                                         onClick={handleNext}
                                         className="rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
-                                        style={{ backgroundColor: 'var(--color-bright)' }}>
+                                        style={{ backgroundColor: 'var(--color-blue)' }}>
                                         Volgende →
                                     </button>
                                 </div>

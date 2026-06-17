@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/globals/Navbar';
+import Stepper from '../../components/globals/Stepper';
+import PageHeader from '@/components/globals/PageHeader';
 
 const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
 const CURRENT_STEP = 3;
@@ -70,49 +72,19 @@ export default function Overview() {
       <main className="min-h-screen bg-[#f7f6f3] text-[#1f2937]">
         <div className="mx-auto max-w-7xl px-8 py-8">
           {/* Header */}
-          <div className="mb-10 flex items-start justify-between">
-            <div>
-              <p className="mb-3 text-sm text-gray-500">Overview · 3/4</p>
-              <h1 className="text-5xl font-serif tracking-tight text-[#172033]">
-                Create new job posting
-              </h1>
-              <p className="mt-3 text-lg text-gray-500">Four steps — about 3 minutes</p>
-            </div>
-          </div>
+          <PageHeader
+            stepLabel="Overzicht"
+            currentStep={CURRENT_STEP}
+            totalSteps={STEPS.length}
+            title="Nieuwe vacature aanmaken"
+            subtitle="Vier stappen — ongeveer 5 minuten"
+          />
 
           {/* Stepper */}
-          <div className="mb-10 flex items-center">
-            {STEPS.map((step, index) => {
-              const stepNumber = index + 1;
-              const isDone = stepNumber < CURRENT_STEP;
-              const isCurrent = stepNumber === CURRENT_STEP;
-              return (
-                <React.Fragment key={step}>
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium"
-                      style={{
-                        backgroundColor: isDone ? '#50B214' : isCurrent ? 'var(--color-blue)' : 'white',
-                        borderColor: isDone ? '#50B214' : isCurrent ? 'var(--color-blue)' : 'var(--color-stone)',
-                        color: isDone || isCurrent ? 'white' : 'var(--color-body)',
-                      }}
-                    >
-                      {isDone ? '✓' : stepNumber}
-                    </div>
-                    <span
-                      className="text-[15px]"
-                      style={{ color: isCurrent ? 'var(--color-headline)' : 'var(--color-body)' }}
-                    >
-                      {step}
-                    </span>
-                  </div>
-                  {index < STEPS.length - 1 && (
-                    <div className="mx-5 h-px flex-1" style={{ backgroundColor: 'var(--color-stone)' }} />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
+          <Stepper
+            steps={STEPS}
+            currentStep={CURRENT_STEP}
+          />
 
           {/* Content */}
           <div className="space-y-8 p-8">
@@ -231,6 +203,7 @@ export default function Overview() {
               <button
                 onClick={handleNext}
                 className="rounded-xl bg-[#6b6fcf] px-5 py-3 font-medium text-white transition hover:opacity-90"
+                style={{ backgroundColor: 'var(--color-blue)' }}
               >
                 Next →
               </button>

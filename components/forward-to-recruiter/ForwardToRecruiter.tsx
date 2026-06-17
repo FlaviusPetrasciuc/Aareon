@@ -318,7 +318,8 @@ export function ForwardToRecruiter({
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="h-12 rounded-xl bg-[#172033] px-8 text-[15px] font-semibold text-white transition hover:bg-[#0f1623] disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-12 rounded-xl px-8 text-[15px] font-semibold text-white transition hover:bg-[#0f1623] disabled:cursor-not-allowed disabled:opacity-50"
+            style={{ backgroundColor: 'var(--color-blue)' }}
           >
             {isSubmitting ? "Verzenden..." : "Doorsturen naar recruiter"}
           </button>
