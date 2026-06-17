@@ -10,6 +10,7 @@ import { SegmentedControl } from '@/components/basics/SegmentedControl';
 import { Textarea } from '@/components/basics/Textarea';
 import Navbar from '@/components/globals/Navbar';
 import Stepper from '@/components/globals/Stepper';
+import PageHeader from '@/components/globals/PageHeader';
 import { createSession, saveSession } from "@/lib/session";
 interface FormData {
     jobTitle: string;
@@ -255,22 +256,14 @@ export default function CreateJobPostingPage() {
             <main className="min-h-screen" style={{ backgroundColor: 'var(--color-sand)', color: 'var(--color-body)' }}>
                 <div className="mx-auto max-w-7xl px-8 py-8">
                     {/* Header */}
-                    <div className="mb-10 flex items-start justify-between">
-                        <div>
-                            <p className="mb-3 text-sm" style={{ color: 'var(--color-body)' }}>
-                                Basisinformatie · 1/4
-                            </p>
-
-                            <h1 className="text-5xl font-serif tracking-tight" style={{ color: 'var(--color-headline)' }}>
-                                Nieuwe vacature aanmaken
-                            </h1>
-
-                            <p className="mt-3 text-lg" style={{ color: 'var(--color-body)' }}>
-                                Vier stappen — ongeveer 3 minuten
-                            </p>
-                        </div>
-                    </div>
-
+                    <PageHeader 
+                        stepLabel="Basisinformatie"
+                        currentStep={CURRENT_STEP}
+                        totalSteps={STEPS.length}
+                        title="Nieuwe vacature aanmaken"
+                        subtitle="Vier stappen — ongeveer 5 minuten"
+                    />
+                    
                     {/* Stepper */}
                     <Stepper
                         steps={STEPS}
@@ -600,7 +593,7 @@ export default function CreateJobPostingPage() {
                                     <button
                                         onClick={handleNext}
                                         className="rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
-                                        style={{ backgroundColor: 'var(--color-bright)' }}>
+                                        style={{ backgroundColor: 'var(--color-blue)' }}>
                                         Volgende →
                                     </button>
                                 </div>

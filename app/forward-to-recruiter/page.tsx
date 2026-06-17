@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { IntakeSession } from "@/types/intake";
 import Navbar from "@/components/globals/Navbar";
 import Stepper from "@/components/globals/Stepper";
+import PageHeader from "@/components/globals/PageHeader";
 
 const STEPS = [
   "Basis",
@@ -47,21 +48,14 @@ export default function ForwardToRecruiterPage() {
 
       <main className="min-h-screen bg-[#f7f6f3] text-[#1f2937]">
         <div className="mx-auto max-w-7xl px-8 py-8">
-          <div className="mb-10 flex items-start justify-between">
-            <div>
-              <p className="mb-3 text-sm text-gray-500">
-                Doorsturen naar recruiter · 4/4
-              </p>
-
-              <h1 className="text-5xl font-serif tracking-tight text-[#172033]">
-                Nieuwe vacature aanmaken
-              </h1>
-
-              <p className="mt-3 text-lg text-gray-500">
-                Vier stappen — ongeveer 3 minuten
-              </p>
-            </div>
-          </div>
+          {/* Header */}
+          <PageHeader
+            stepLabel="Doorstuuren naar recruiter"
+            currentStep={CURRENT_STEP}
+            totalSteps={STEPS.length}
+            title="Nieuwe vacature aanmaken"
+            subtitle="Vier stappen — ongeveer 5 minuten"
+          />
 
           <Stepper
             steps={STEPS}
