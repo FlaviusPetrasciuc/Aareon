@@ -312,7 +312,7 @@ export function ForwardToRecruiter({
             onClick={onBack}
             className="h-12 rounded-xl border border-[#d6d3d1] bg-white px-6 text-[15px] font-medium text-[#172033] transition hover:bg-[#f3f2ef]"
           >
-            Terug
+            ← Terug
           </button>
         )}
 
