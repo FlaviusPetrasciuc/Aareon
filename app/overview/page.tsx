@@ -6,7 +6,8 @@ import Navbar from '@/components/globals/Navbar';
 import Stepper from '../../components/globals/Stepper';
 import PageHeader from '@/components/globals/PageHeader';
 
-const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
+
+const STEPS = ['Basis', 'Functieomschrijving', 'Overzicht', 'Doorsturen naar recruiter'];
 const CURRENT_STEP = 3;
 
 interface BasicsData {
