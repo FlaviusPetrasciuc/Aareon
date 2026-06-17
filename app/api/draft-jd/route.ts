@@ -15,7 +15,9 @@ function buildPrompt(basics: Record<string, unknown>, style: DraftStyle): string
   const salaryRange = salaryMin && salaryMax ? `${currency} ${salaryMin}–${salaryMax} per month` : '';
   const education = (basics.education as string) || '';
   const mustHaves = (basics.mustHaves as string) || '';
+  const shouldntHaves = (basics.niceToHaves as string) || '';
   const niceToHaves = (basics.niceToHaves as string) || '';
+  
   const additionalDetails = (basics.additionalDetails as string) || '';
 
   const jobDetails = `Job details:
@@ -28,6 +30,7 @@ ${salaryRange ? `- Salary: ${salaryRange}` : ''}
 ${education ? `- Education requirement: ${education}` : ''}
 ${mustHaves ? `- Must-haves: ${mustHaves}` : ''}
 ${niceToHaves ? `- Nice-to-haves: ${niceToHaves}` : ''}
+${shouldntHaves ? `- Shouldn't haves: ${shouldntHaves}` : ''}
 ${additionalDetails ? `- Additional details: ${additionalDetails}` : ''}`;
 
   const markers = `Output the job description using EXACTLY these section markers in this order. Write the ENTIRE job description in Dutch (Nederlands). All content under each marker must be written in Dutch. No preamble, no text before [SUMMARY]:`;
@@ -46,7 +49,7 @@ ${markers}
 3-4 core responsibilities in Dutch, each on its own line prefixed with •
 
 [REQUIREMENTS]
-3-4 must-have qualifications in Dutch, each on its own line prefixed with •
+3-4 must-have qualifications in Dutch, each on its own line prefixed with • 
 
 [BENEFITS]
 2-3 key benefits Aareon offers in Dutch${salaryRange ? ` (include salary range: ${salaryRange})` : ''}, each on its own line prefixed with •
@@ -68,7 +71,7 @@ ${markers}
 10-12 detailed responsibilities in Dutch, each on its own line prefixed with •. Include day-to-day tasks and long-term ownership areas.
 
 [REQUIREMENTS]
-8-10 qualifications in Dutch (must-haves, nice-to-haves, education), each on its own line prefixed with •. Clearly separate hard skills, soft skills, and experience levels.
+8-10 qualifications in Dutch (must-haves, nice-to-haves, education), each on its own line prefixed with •. Clearly separate hard skills, soft skills, and experience levels. Separate the requirements into sections: Verplicht:, Pre: and Bezwaar:
 
 [BENEFITS]
 6-8 benefits Aareon offers in Dutch${salaryRange ? ` (include salary range: ${salaryRange})` : ''}, each on its own line prefixed with •. Include culture, growth opportunities, and perks.
@@ -90,7 +93,7 @@ ${markers}
 5-7 responsibilities in Dutch written casually, each on its own line prefixed with •. Use plain language, avoid jargon.
 
 [REQUIREMENTS]
-4-6 qualifications in Dutch in a non-intimidating way, each on its own line prefixed with •. Lead with what matters most, not a laundry list.
+4-6 qualifications in Dutch in a non-intimidating way, each on its own line prefixed with •. Lead with what matters most, not a laundry list. Separate the requirements into sections: Verplicht:, Pre: and Bezwaar:
 
 [BENEFITS]
 4-5 benefits in Dutch${salaryRange ? ` (include salary range: ${salaryRange})` : ''}, each on its own line prefixed with •. Sound genuine, not like a PR brochure.
@@ -111,7 +114,7 @@ ${markers}
 5-7 key responsibilities in Dutch, each on its own line prefixed with •
 
 [REQUIREMENTS]
-5-6 required qualifications in Dutch (draw from must-haves and education level), each on its own line prefixed with •
+5-6 required qualifications in Dutch (draw from must-haves and education level), each on its own line prefixed with •. Separate the requirements into sections: Verplicht:, Pre: and Bezwaar:
 
 [BENEFITS]
 4-5 benefits Aareon offers in Dutch${salaryRange ? ` (include salary range: ${salaryRange})` : ''}, each on its own line prefixed with •
