@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FieldLabel } from '@/components/basics/FieldLabel';
 import Navbar from '@/components/globals/Navbar';
 
-const STEPS = ['Basics', 'Job description', 'Overview', 'Forward to recruiter'];
+const STEPS = ['Basis', 'Functieomschrijving', 'Overzicht', 'Doorsturen naar recruiter'];
 const CURRENT_STEP = 2;
 
 interface FormState {
@@ -48,10 +48,10 @@ const textareaClass =
 type DraftStyle = 'standard' | 'extensive' | 'short' | 'informal';
 
 const STYLE_OPTIONS: { style: DraftStyle; label: string }[] = [
-  { style: 'standard',  label: 'Standard'  },
-  { style: 'short',     label: 'Short'     },
-  { style: 'extensive', label: 'Extensive' },
-  { style: 'informal',  label: 'Informal'  },
+  { style: 'standard',  label: 'Standaard' },
+  { style: 'short',     label: 'Kort'      },
+  { style: 'extensive', label: 'Uitgebreid'},
+  { style: 'informal',  label: 'Informeel' },
 ];
 
 export default function JobDescriptionPage() {
@@ -153,11 +153,11 @@ export default function JobDescriptionPage() {
 
           {/* Header */}
           <div className="mb-10">
-            <p className="mb-1 text-sm" style={{ color: 'var(--color-body)' }}>Job description · 2/4</p>
+            <p className="mb-1 text-sm" style={{ color: 'var(--color-body)' }}>Functieomschrijving · 2/4</p>
             <h1 className="text-5xl font-serif tracking-tight" style={{ color: 'var(--color-headline)' }}>
-              Create new job posting
+              Nieuwe vacature aanmaken
             </h1>
-            <p className="mt-3 text-lg" style={{ color: 'var(--color-body)' }}>Four steps — about 3 minutes</p>
+            <p className="mt-3 text-lg" style={{ color: 'var(--color-body)' }}>Vier stappen — ongeveer 3 minuten</p>
           </div>
 
           {/* Stepper */}
@@ -201,8 +201,8 @@ export default function JobDescriptionPage() {
                   ✨
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold" style={{ color: 'var(--color-headline)' }}>Draft with AI</p>
-                  <p className="text-xs" style={{ color: 'var(--color-body)' }}>Uses previous successful Aareon postings as a base.</p>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--color-headline)' }}>Opstellen met AI</p>
+                  <p className="text-xs" style={{ color: 'var(--color-body)' }}>Gebaseerd op eerdere succesvolle Aareon-vacatures.</p>
                 </div>
                 <div className="relative" ref={dropdownRef}>
                   <button
@@ -212,7 +212,7 @@ export default function JobDescriptionPage() {
                     className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ backgroundColor: '#FF7F62' }}
                   >
-                    {isDrafting ? 'Drafting…' : `✨ Generate with AI · ${selectedStyle.label}`}
+                    {isDrafting ? 'Opstellen…' : `✨ Genereren met AI · ${selectedStyle.label}`}
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z" /></svg>
                   </button>
 
@@ -236,22 +236,22 @@ export default function JobDescriptionPage() {
 
               {/* Fields */}
               <div>
-                <FieldLabel label="Summary" />
+                <FieldLabel label="Samenvatting" />
                 <textarea rows={3} className={textareaClass} value={form.summary} onChange={(e) => handleChange('summary', e.target.value)} />
               </div>
 
               <div>
-                <FieldLabel label="Responsibilities" />
+                <FieldLabel label="Verantwoordelijkheden" />
                 <textarea rows={5} className={textareaClass} value={form.responsibilities} onChange={(e) => handleChange('responsibilities', e.target.value)} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <FieldLabel label="Requirements" />
+                  <FieldLabel label="Vereisten" />
                   <textarea rows={5} className={textareaClass} value={form.requirements} onChange={(e) => handleChange('requirements', e.target.value)} />
                 </div>
                 <div>
-                  <FieldLabel label="What we offer" />
+                  <FieldLabel label="Wat wij bieden" />
                   <textarea rows={5} className={textareaClass} value={form.benefits} onChange={(e) => handleChange('benefits', e.target.value)} />
                 </div>
               </div>
@@ -266,7 +266,7 @@ export default function JobDescriptionPage() {
                   className="rounded-xl border bg-white px-5 py-3 font-medium transition hover:bg-gray-50"
                   style={{ borderColor: 'var(--color-stone)', color: 'var(--color-headline)' }}
                 >
-                  ← Back
+                  ← Terug
                 </button>
                 <button
                   type="button"
@@ -275,7 +275,7 @@ export default function JobDescriptionPage() {
                   className={`rounded-xl px-5 py-3 font-medium text-white transition ${isNextEnabled ? 'hover:opacity-90' : 'cursor-not-allowed opacity-50'}`}
                   style={{ backgroundColor: 'var(--color-blue)' }}
                 >
-                  Next →
+                  Volgende →
                 </button>
               </div>
             </div>
