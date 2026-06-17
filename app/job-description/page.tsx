@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FieldLabel } from '@/components/basics/FieldLabel';
 import Navbar from '@/components/globals/Navbar';
+import Stepper from '@/components/globals/Stepper';
 
 const STEPS = ['Basis', 'Functieomschrijving', 'Overzicht', 'Doorsturen naar recruiter'];
 const CURRENT_STEP = 2;
@@ -32,6 +33,13 @@ const MARKERS = [
   '[RESPONSIBILITIES]',
   '[REQUIREMENTS]',
   '[BENEFITS]'
+];
+
+const STEP_ROUTES = [
+  '/basics',
+  '/job-description',
+  '/overview',
+  '/forward-to-recruiter',
 ];
 
 const CHARACTER_LIMITS = {
@@ -298,35 +306,10 @@ export default function JobDescriptionPage() {
           </div>
 
           {/* Stepper */}
-          <div className="mb-10 flex items-center">
-            {STEPS.map((step, index) => {
-              const stepNumber = index + 1;
-              const isDone = stepNumber < CURRENT_STEP;
-              const isCurrent = stepNumber === CURRENT_STEP;
-              return (
-                <React.Fragment key={step}>
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium"
-                      style={{
-                        backgroundColor: isDone ? '#50B214' : isCurrent ? 'var(--color-blue)' : 'white',
-                        borderColor: isDone ? '#50B214' : isCurrent ? 'var(--color-blue)' : 'var(--color-stone)',
-                        color: isDone || isCurrent ? 'white' : 'var(--color-body)',
-                      }}
-                    >
-                      {isDone ? '✓' : stepNumber}
-                    </div>
-                    <span className="text-[15px]" style={{ color: isCurrent ? 'var(--color-headline)' : 'var(--color-body)' }}>
-                      {step}
-                    </span>
-                  </div>
-                  {index < STEPS.length - 1 && (
-                    <div className="mx-5 h-px flex-1" style={{ backgroundColor: 'var(--color-stone)' }} />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
+          <Stepper
+            steps={STEPS}
+            currentStep={CURRENT_STEP}
+          />
 
           {/* Form card */}
           <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'var(--color-stone)', backgroundColor: 'var(--color-sand)' }}>
