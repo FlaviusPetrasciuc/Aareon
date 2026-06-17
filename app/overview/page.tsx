@@ -6,6 +6,7 @@ import Navbar from '@/components/globals/Navbar';
 import Stepper from '../../components/globals/Stepper';
 import PageHeader from '@/components/globals/PageHeader';
 
+
 const STEPS = ['Basis', 'Functieomschrijving', 'Overzicht', 'Doorsturen naar recruiter'];
 const CURRENT_STEP = 3;
 
@@ -108,13 +109,6 @@ export default function Overview() {
         <div className="mx-auto max-w-7xl px-8 py-8">
 
           {/* Header */}
-<<<<<<< HEAD
-          <div className="mb-10">
-            <p className="mb-3 text-sm text-gray-500">{S.eyebrow}</p>
-            <h1 className="text-5xl font-serif tracking-tight text-[#172033]">{S.title}</h1>
-            <p className="mt-3 text-lg text-gray-500">{S.subtitle}</p>
-          </div>
-=======
           <PageHeader
             stepLabel="Overzicht"
             currentStep={CURRENT_STEP}
@@ -122,7 +116,6 @@ export default function Overview() {
             title="Nieuwe vacature aanmaken"
             subtitle="Vier stappen — ongeveer 5 minuten"
           />
->>>>>>> origin
 
           {/* Stepper */}
           <Stepper
