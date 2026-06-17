@@ -1,59 +1,86 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
-const documents = [
-  {
-    id: 1,
-    manager: "Olena Popova",
-    email: "olena.popova@aareon.nl",
-    document: "Frontend Developer Job Posting",
-    department: "IT",
-    submitted: "06 Jun 2026",
-    status: "Pending",
-    approval: "Waiting for review",
-  },
-  {
-    id: 2,
-    manager: "Anna de Vries",
-    email: "anna.devries@aareon.nl",
-    document: "Backend Developer Job Posting",
-    department: "Engineering",
-    submitted: "05 Jun 2026",
-    status: "Reviewed",
-    approval: "Approved",
-  },
-  {
-    id: 3,
-    manager: "Mark Jansen",
-    email: "mark.jansen@aareon.nl",
-    document: "UX Designer Job Posting",
-    department: "Design",
-    submitted: "04 Jun 2026",
-    status: "To do",
-    approval: "Not started",
-  },
-];
+type ApprovalRequest = {
+  request_id: string;
+  status: string;
+  comment: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+  approval_pdf_path: string | null;
+  manager: {
+    email: string;
+    profile_id: string;
+  }[] | null;
+  job_postings: {
+    title: string;
+  }[];
+};
 
 function getStatusStyle(status: string) {
-  if (status === "Reviewed") {
-    return "bg-[#B9E99C] text-[#081326]";
-  }
-
-  if (status === "Pending") {
-    return "bg-[#FFD8CA] text-[#081326]";
-  }
-
+  if (status === "approved") return "bg-[#B9E99C] text-[#081326]";
+  if (status === "pending") return "bg-[#FFD8CA] text-[#081326]";
   return "bg-[#EBE3DC] text-[#384152]";
+}
+
+function formatStatus(status: string) {
+  if (status === "approved") return "Reviewed";
+  if (status === "pending") return "Pending";
+  return "To do";
+}
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export default function DirectorDashboard() {
   const router = useRouter();
+  const [requests, setRequests] = useState<ApprovalRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const total = documents.length;
-  const todo = documents.filter((doc) => doc.status === "To do").length;
-  const pending = documents.filter((doc) => doc.status === "Pending").length;
-  const reviewed = documents.filter((doc) => doc.status === "Reviewed").length;
+  useEffect(() => {
+    async function fetchRequests() {
+      setLoading(true);
+      setError(null);
+
+      const { data, error } = await supabase
+        .from("approval_requests")
+        .select(`
+          request_id,
+          status,
+          comment,
+          created_at,
+          reviewed_at,
+          approval_pdf_path,
+          manager:profiles!manager_id(email, profile_id),
+          job_postings(title)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        setError(error.message);
+      } else {
+        setRequests(data as ApprovalRequest[]);
+      }
+
+      setLoading(false);
+    }
+
+    fetchRequests();
+  }, []);
+
+  const total = requests.length;
+  const todo = requests.filter((r) => r.status === "rejected").length;
+  const pending = requests.filter((r) => r.status === "pending").length;
+  const reviewed = requests.filter((r) => r.status === "approved").length;
 
   return (
     <div className="min-h-screen bg-[var(--color-sand)] text-[var(--color-body)]">
@@ -62,14 +89,11 @@ export default function DirectorDashboard() {
           <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-white/70">
             Aareon dashboard
           </p>
-
           <h1 className="font-serif text-4xl text-white md:text-5xl">
             Document approvals
           </h1>
-
           <p className="mt-3 max-w-2xl text-base leading-7 text-white/75">
-            Overview of managers, submitted documents and current approval
-            status.
+            Overview of managers, submitted documents and current approval status.
           </p>
         </header>
 
@@ -96,7 +120,6 @@ export default function DirectorDashboard() {
                 <tr className="bg-[var(--color-sand)] text-left text-xs uppercase tracking-[0.15em]">
                   <th className="px-6 py-4 font-semibold">Manager</th>
                   <th className="px-6 py-4 font-semibold">Document</th>
-                  <th className="px-6 py-4 font-semibold">Department</th>
                   <th className="px-6 py-4 font-semibold">Submitted</th>
                   <th className="px-6 py-4 font-semibold">Status</th>
                   <th className="px-6 py-4 font-semibold">Approval</th>
@@ -104,62 +127,76 @@ export default function DirectorDashboard() {
               </thead>
 
               <tbody>
-                {documents.map((doc) => (
-                  <tr
-                    key={doc.id}
-                    className="border-t border-[var(--color-stone)] transition hover:bg-[var(--color-sand)]/60"
-                  >
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-blue)] text-sm font-semibold text-white">
-                          {doc.manager
-                            .split(" ")
-                            .map((name) => name[0])
-                            .join("")}
-                        </div>
-
-                        <div>
-                          <p className="font-semibold text-[var(--color-headline)]">
-                            {doc.manager}
-                          </p>
-                          <p className="text-sm">{doc.email}</p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-6 py-5 font-medium text-[var(--color-headline)]">
-                      {doc.document}
-                    </td>
-
-                    <td className="px-6 py-5">{doc.department}</td>
-                    <td className="px-6 py-5">{doc.submitted}</td>
-
-                    <td className="px-6 py-5">
-                      <span
-                        className={`rounded-full px-4 py-2 text-xs font-semibold ${getStatusStyle(
-                          doc.status
-                        )}`}
-                      >
-                        {doc.status}
-                      </span>
-                    </td>
-
-                    <td className="px-6 py-5">
-                      {doc.status === "Pending" ? (
-                        <button
-                          onClick={() => router.push("/review-request")}
-                          className="rounded-full border border-[var(--color-blue)] px-4 py-2 text-sm font-semibold text-[var(--color-blue)] transition hover:bg-[var(--color-blue)] hover:text-white"
-                        >
-                          Waiting for review
-                        </button>
-                      ) : (
-                        <span className="rounded-full border border-[var(--color-blue)] px-4 py-2 text-sm font-semibold text-[var(--color-blue)]">
-                          {doc.approval}
-                        </span>
-                      )}
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
+                      Loading…
                     </td>
                   </tr>
-                ))}
+                ) : error ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-red-400">
+                      {error}
+                    </td>
+                  </tr>
+                ) : requests.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
+                      No submissions yet.
+                    </td>
+                  </tr>
+                ) : (
+                  requests.map((req) => (
+                    <tr
+                      key={req.request_id}
+                      className="border-t border-[var(--color-stone)] transition hover:bg-[var(--color-sand)]/60"
+                    >
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-blue)] text-sm font-semibold text-white">
+                            {req.manager?.[0]?.email?.[0]?.toUpperCase() ?? "?"}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-[var(--color-headline)]">
+                            {req.manager?.[0]?.email ?? "Unknown"}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-5 font-medium text-[var(--color-headline)]">
+                        {req.job_postings?.[0]?.title ?? "—"}
+                      </td>
+
+                      <td className="px-6 py-5">
+                        {formatDate(req.created_at)}
+                      </td>
+
+                      <td className="px-6 py-5">
+                        <span className={`rounded-full px-4 py-2 text-xs font-semibold ${getStatusStyle(req.status)}`}>
+                          {formatStatus(req.status)}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-5">
+                        {req.status === "pending" ? (
+                          <button
+                            onClick={() =>
+                              router.push(`/review-request?id=${req.request_id}`)
+                            }
+                            className="rounded-full border border-[var(--color-blue)] px-4 py-2 text-sm font-semibold text-[var(--color-blue)] transition hover:bg-[var(--color-blue)] hover:text-white"
+                          >
+                            Review
+                          </button>
+                        ) : (
+                          <span className="rounded-full border border-[var(--color-blue)] px-4 py-2 text-sm font-semibold text-[var(--color-blue)]">
+                            {req.status === "approved" ? "Approved" : "Rejected"}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
