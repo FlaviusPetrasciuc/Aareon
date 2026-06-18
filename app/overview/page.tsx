@@ -58,6 +58,7 @@ const S = {
   shouldntHaves: 'Niet wenselijk',
   whatWeOffer: 'Wat wij bieden',
   aboutCompany: 'Over de vestiging',
+  workEquipment: 'Werkuitrusting',
   back: '← Terug',
   next: 'Volgende →',
 };
@@ -167,7 +168,7 @@ export default function Overview() {
                 <p className="text-[#172033] uppercase">{basics.education || '—'}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.whatWeOffer}</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.workEquipment}</h3>
                 <p className="text-[#172033]">{equipment}</p>
               </div>
             </div>
