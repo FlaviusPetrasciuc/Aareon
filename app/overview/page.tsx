@@ -41,6 +41,27 @@ interface BasicsData {
   additionalDetails?: string;
 }
 
+const S = {
+  reviewText: 'Controleer de details van uw vacature voordat u verdergaat.',
+  location: 'Locatie',
+  department: 'Afdeling',
+  workMode: 'Werkwijze',
+  employmentType: 'Dienstverband',
+  salaryRange: 'Salarisbereik',
+  education: 'Opleiding',
+  equipment: 'Werkuitrusting',
+  aboutRole: 'Over de functie',
+  responsibilities: 'Verantwoordelijkheden',
+  requirements: 'Vereisten',
+  mustHaves: 'Vereist',
+  niceToHaves: 'Pré',
+  shouldntHaves: 'Niet wenselijk',
+  whatWeOffer: 'Wat wij bieden',
+  aboutCompany: 'Over de vestiging',
+  back: '← Terug',
+  next: 'Volgende →',
+};
+
 interface JobDescriptionData {
   summary?: string;
   responsibilities?: string;
@@ -122,42 +143,41 @@ export default function Overview() {
             {/* Job Details Grid */}
             <div className="grid grid-cols-2 gap-6 pb-4 border-b border-[#e7e5e4]">
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Location</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.location}</h3>
                 <p className="text-[#172033] capitalize">{basics.location || '—'}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Department</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.department}</h3>
                 <p className="text-[#172033] capitalize">{basics.department || '—'}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Work Mode</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.workMode}</h3>
                 <p className="text-[#172033] capitalize">{basics.workMode || '—'}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Employment Type</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.employmentType}</h3>
                 <p className="text-[#172033] capitalize">{basics.employmentType || '—'}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Salary Range</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.salaryRange}</h3>
                 <p className="text-[#172033]">{salary}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Education</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.education}</h3>
                 <p className="text-[#172033] uppercase">{basics.education || '—'}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Work Equipment</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{S.whatWeOffer}</h3>
                 <p className="text-[#172033]">{equipment}</p>
               </div>
             </div>
 
             {jd.summary && (
               <div>
-                <h3 className="text-lg font-semibold text-[#172033] mb-3">About the Role</h3>
+                <h3 className="text-lg font-semibold text-[#172033] mb-3">{S.aboutRole}</h3>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-line">{jd.summary}</p>
               </div>
             )}
-
 
             <div>
               <h3 className="text-lg font-semibold text-[#172033] mb-3">{S.aboutCompany}</h3>
@@ -168,7 +188,7 @@ export default function Overview() {
 
             {jd.responsibilities && (
               <div>
-                <h3 className="text-lg font-semibold text-[#172033] mb-3">Responsibilities</h3>
+                <h3 className="text-lg font-semibold text-[#172033] mb-3">{S.responsibilities}</h3>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-line">{jd.responsibilities}</p>
               </div>
             )}
@@ -182,7 +202,7 @@ export default function Overview() {
 
             {jd.benefits && (
               <div>
-                <h3 className="text-lg font-semibold text-[#172033] mb-3">What We Offer</h3>
+                <h3 className="text-lg font-semibold text-[#172033] mb-3">{S.whatWeOffer}</h3>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-line">{jd.benefits}</p>
               </div>
             )}
@@ -195,14 +215,14 @@ export default function Overview() {
                 onClick={handleBack}
                 className="rounded-xl border border-[#d6d3d1] bg-white px-5 py-3 font-medium text-[#172033] transition hover:bg-gray-50"
               >
-                ← Back
+                {S.back}
               </button>
               <button
                 onClick={handleNext}
                 className="rounded-xl bg-[#6b6fcf] px-5 py-3 font-medium text-white transition hover:opacity-90"
                 style={{ backgroundColor: 'var(--color-blue)' }}
               >
-                Next →
+                {S.next}
               </button>
             </div>
           </div>
