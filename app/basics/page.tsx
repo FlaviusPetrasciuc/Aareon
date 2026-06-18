@@ -43,13 +43,6 @@ const STEPS = [
     'Doorsturen naar recruiter',
 ];
 
-const STEP_ROUTES = [
-    '/basics',
-    '/job-description',
-    '/overview',
-    '/forward-to-recruiter',
-];
-
 const CHARACTER_LIMITS = {
     jobTitle: 200,
     salaryMin: 7,
@@ -340,13 +333,15 @@ export default function CreateJobPostingPage() {
                                             { label: "—", value: '' },
                                             { label: "Amersfoort", value: 'amersfoort' },
                                             { label: "Amsterdam", value: 'amsterdam' },
-                                            { label: "Breda", value: 'breda' },
+                                            { label: "Breda (Blue Mountain)", value: 'breda-blue-mountain' },
                                             { label: "Emmen", value: 'emmen' },
-                                            { label: "Enschede", value: 'enschede' },
-                                            { label: "Groningen", value: 'groningen' },
-                                            { label: "Oosterhout", value: 'oosterhout' },
+                                            { label: "Enschede (Facilitor)", value: 'enschede-facilitor' },
+                                            { label: "Groningen (Embrace)", value: 'groningen-embrace' },
+                                            { label: "Groningen (Blue Mountain)", value: 'groningen-blue-mountain' },
+                                            { label: "Oosterhout (Twinq)", value: 'oosterhout-twinq' },
                                             { label: "Roermond", value: 'roermond' },
-                                            { label: "Sneek", value: 'sneek' }
+                                            { label: "Sneek (Embrace)", value: 'sneek-embrace' },
+                                            { label: "Sneed (Viadata)", value: 'sneek-viadata' },
                                         ]}
                                     />
                                     {getFieldError('location') && (
