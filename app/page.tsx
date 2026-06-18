@@ -11,8 +11,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [touched, setTouched] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const isValid = isAllowedAareonEmail(email);
+  const isValid = isAllowedAareonEmail(email) && password.length >= 8 && password === confirmPassword;
   const showError = touched && !isValid;
   const allowedDomains = AAREON_EMAIL_DOMAINS.map((domain) => `@${domain}`).join(" or ");
 
@@ -121,6 +123,56 @@ export default function LoginPage() {
                 </p>
               )}
             </div>
+<<<<<<< HEAD
+=======
+
+  {/* Password */}
+  <div className="mb-5">
+    <label
+      htmlFor="password"
+      className="block font-mono text-[10px] font-medium tracking-[0.15em] uppercase text-aareon-body mb-2"
+    >
+      Password
+    </label>
+    <input
+      id="password"
+      type="password"
+      placeholder="••••••••"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      className="w-full px-4 py-3 font-body text-sm font-light text-aareon-headline bg-white rounded-lg outline-none transition-all border-[1.5px] border-aareon-stone focus:border-aareon-bright focus:shadow-[0_0_0_3px_rgba(8,109,251,0.12)]"
+    />
+  </div>
+
+  {/* Confirm Password */}
+  <div className="mb-5">
+    <label
+      htmlFor="confirm-password"
+      className="block font-mono text-[10px] font-medium tracking-[0.15em] uppercase text-aareon-body mb-2"
+    >
+      Confirm password
+    </label>
+    <input
+      id="confirm-password"
+      type="password"
+      placeholder="••••••••"
+      value={confirmPassword}
+      onChange={(e) => setConfirmPassword(e.target.value)}
+      className={[
+        "w-full px-4 py-3 font-body text-sm font-light text-aareon-headline bg-white rounded-lg outline-none transition-all border-[1.5px]",
+        confirmPassword && password !== confirmPassword
+          ? "border-aareon-coral shadow-[0_0_0_3px_rgba(255,127,98,0.12)]"
+          : "border-aareon-stone focus:border-aareon-bright focus:shadow-[0_0_0_3px_rgba(8,109,251,0.12)]",
+      ].join(" ")}
+    />
+    {confirmPassword && password !== confirmPassword && (
+      <p className="font-body text-xs text-aareon-coral mt-1.5">
+        Passwords do not match.
+      </p>
+    )}
+  </div>
+
+>>>>>>> origin/dev/prototype
             <button
               type="submit"
               disabled={loading}
