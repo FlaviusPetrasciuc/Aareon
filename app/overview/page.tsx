@@ -14,7 +14,7 @@ const locationDescriptions: Record<string, string> = {
   "emmen": "Aareon is Europa's toonaangevende softwarepartner voor vastgoed- en organisatiebeheer. Vanuit meerdere vestigingen in Nederland werken we dagelijks aan slimme SaaS-oplossingen die organisaties in de woningcorporatie-, zorg-, onderwijs- en overheidsector écht verder helpen. Bij Aareon doe je werk dat er toe doet voor meer dan 13.000 klanten die op onze software vertrouwen. Je werkt in een omgeving waar innovatie geen buzzword is, maar een dagelijkse werkelijkheid, en waar jouw bijdrage zichtbaar impact heeft.",
   "amsterdam": "Aareon is Europa's toonaangevende softwarepartner voor vastgoed- en organisatiebeheer. Vanuit meerdere vestigingen in Nederland werken we dagelijks aan slimme SaaS-oplossingen die organisaties in de woningcorporatie-, zorg-, onderwijs- en overheidsector écht verder helpen. Bij Aareon doe je werk dat er toe doet voor meer dan 13.000 klanten die op onze software vertrouwen. Je werkt in een omgeving waar innovatie geen buzzword is, maar een dagelijkse werkelijkheid, en waar jouw bijdrage zichtbaar impact heeft.",
   "groningen-embrace": "Bij Embrace helpen we organisaties hun digitale dienstverlening en samenwerking slimmer en mensgerichter te maken. Met onze software brengen we communicatie, processen en klantcontact samen in één platform. Denk aan een social intranet, klantportalen en een omnichannel CRM waarmee organisaties hun klanten én medewerkers beter ondersteunen. Bij Embrace geloven we in vrijheid, verantwoordelijkheid en samenwerken.",
-  "groningen-blueMountain": "Blue Mountain bestaat uit een diversiteit aan professionals met ieder eigen talenten en allen een grote liefde voor data. Wij zijn gespecialiseerd in het werkend krijgen van business intelligence binnen organisaties. We geven betekenis aan data en maken het mogelijk dat mensen én organisaties in beweging komen. Bij Blue Mountain werken we vanuit vertrouwen en verbeteren we vanuit bevlogenheid.",
+  "groningen-blue-mountain": "Blue Mountain bestaat uit een diversiteit aan professionals met ieder eigen talenten en allen een grote liefde voor data. Wij zijn gespecialiseerd in het werkend krijgen van business intelligence binnen organisaties. We geven betekenis aan data en maken het mogelijk dat mensen én organisaties in beweging komen. Bij Blue Mountain werken we vanuit vertrouwen en verbeteren we vanuit bevlogenheid.",
   "sneek-embrace": "Bij Embrace helpen we organisaties hun digitale dienstverlening en samenwerking slimmer en mensgerichter te maken. Met onze software brengen we communicatie, processen en klantcontact samen in één platform. Denk aan een social intranet, klantportalen en een omnichannel CRM waarmee organisaties hun klanten én medewerkers beter ondersteunen. Bij Embrace geloven we in vrijheid, verantwoordelijkheid en samenwerken.",
   "sneek-viadata": "Wij zijn dé specialist in slimme softwareoplossingen voor serviceorganisaties, met een sterke focus op de corporatiesector. Onze producten zijn gebaseerd op Microsoft Dynamics 365 en helpen organisaties om hun serviceprocessen slimmer, sneller en klantgerichter te maken. We zijn een groeiende, innovatieve club met een nuchtere mentaliteit die gelooft in vrijheid, vertrouwen en verantwoordelijkheid.",
   "enschede-facilitor": "Bij Facilitor werk je in een open en informele sfeer met collega's die elkaar helpen. We leveren al jaren hoge klanttevredenheid en daar zijn we trots op. Je komt terecht in een hecht team waar samenwerken en leren vanzelfsprekend is. Daarnaast zijn we een business unit van Aareon, het grootste vastgoedsoftwarebedrijf van Europa.",
@@ -96,7 +96,7 @@ export default function Overview() {
 
   const salary =
     basics.salaryMin && basics.salaryMax
-      ? `${basics.currency ?? '€'}${basics.salaryMin} - ${basics.currency ?? '€'}${basics.salaryMax} per month`
+      ? `${basics.currency ?? '€'}${basics.salaryMin} - ${basics.currency ?? '€'}${basics.salaryMax} per maand`
       : '—';
 
   const equipment = [
@@ -134,10 +134,10 @@ export default function Overview() {
           <div className="space-y-8 p-8">
             <div>
               <h2 className="text-2xl font-serif text-[#172033] mb-2">
-                {basics.jobTitle || 'Untitled Position'}
+                {basics.jobTitle || 'Geen functietitel'}
               </h2>
               <p className="text-gray-500 text-sm">
-                Review the details of your job posting before moving on.
+                {S.reviewText}
               </p>
             </div>
 
