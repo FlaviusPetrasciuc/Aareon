@@ -25,10 +25,10 @@ export default function RegisterPage() {
 
   const errors = {
     password: touched.password && !isValidPassword
-      ? "Password must be at least 8 characters."
+      ? "Wachtwoord moet minimaal 8 tekens bevatten."
       : null,
     confirmPassword: touched.confirmPassword && !isPasswordMatch
-      ? "Passwords do not match."
+      ? "Wachtwoorden komen niet overeen."
       : null,
   };
 
@@ -55,7 +55,7 @@ export default function RegisterPage() {
       return;
     }
 
-    setSuccess(result?.success ?? "Account created!");
+    setSuccess(result?.success ?? "Account aangemaakt!");
     setLoading(false);
   }
 
@@ -118,10 +118,10 @@ export default function RegisterPage() {
           ) : (
             <>
               <h2 className="font-title text-[28px] font-normal text-aareon-headline leading-tight mb-2 italic">
-                Create your<br />account
+                Maak uw<br />account aan
               </h2>
               <p className="text-sm text-aareon-body font-light mb-8 leading-relaxed font-body">
-                Sign up with your authorised Aareon email.
+                Registreer met uw geautoriseerde Aareon e-mailadres.
               </p>
 
               <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -129,14 +129,14 @@ export default function RegisterPage() {
                 {/* Email */}
                 <div>
                   <label htmlFor="email" className="block font-mono text-[10px] font-medium tracking-[0.15em] uppercase text-aareon-body mb-2">
-                    Company email
+                    Zakelijk e-mailadres
                   </label>
                   <input
                     id="email"
                     type="email"
                     autoFocus
                     autoComplete="email"
-                    placeholder="you@aareon.nl"
+                    placeholder="u@aareon.nl"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     onBlur={() => setTouched((t) => ({ ...t, email: true }))}
@@ -147,14 +147,14 @@ export default function RegisterPage() {
                 {/* Password */}
                 <div>
                   <label htmlFor="password" className="block font-mono text-[10px] font-medium tracking-[0.15em] uppercase text-aareon-body mb-2">
-                    Password
+                   Wachtwoord
                   </label>
                   <div className="relative">
                     <input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       autoComplete="new-password"
-                      placeholder="Min. 8 characters"
+                      placeholder="Min. 8 tekens"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       onBlur={() => setTouched((t) => ({ ...t, password: true }))}
@@ -178,14 +178,14 @@ export default function RegisterPage() {
                 {/* Confirm password */}
                 <div>
                   <label htmlFor="confirmPassword" className="block font-mono text-[10px] font-medium tracking-[0.15em] uppercase text-aareon-body mb-2">
-                    Confirm password
+                    Bevestig wachtwoord
                   </label>
                   <div className="relative">
                     <input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       autoComplete="new-password"
-                      placeholder="Repeat your password"
+                      placeholder="Herhaal uw wachtwoord"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       onBlur={() => setTouched((t) => ({ ...t, confirmPassword: true }))}
@@ -220,21 +220,21 @@ export default function RegisterPage() {
                 >
                   {loading
                     ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    : <>Create account <span>→</span></>
+                    : <>Account aanmaken <span>→</span></>
                   }
                 </button>
               </form>
 
               <div className="mt-6 flex items-center gap-3">
                 <div className="flex-1 h-px bg-aareon-stone" />
-                <span className="font-mono text-[10px] text-aareon-body/40 uppercase tracking-widest">or</span>
+                <span className="font-mono text-[10px] text-aareon-body/40 uppercase tracking-widest">of</span>
                 <div className="flex-1 h-px bg-aareon-stone" />
               </div>
 
               <p className="mt-4 text-center font-body text-[13px] text-aareon-body/70">
-                Already have an account?{" "}
+                Heeft u al een account?{" "}
                 <Link href="/" className="font-medium text-aareon-blue hover:text-aareon-bright transition-colors">
-                  Sign in
+                  Inloggen
                 </Link>
               </p>
             </>
