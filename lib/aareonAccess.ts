@@ -1,5 +1,3 @@
-import { getTestMessageUrl } from "nodemailer";
-
 export const AAREON_EMAIL_DOMAINS = ["gmail.com", "aareon.nl"];
 
 const ALLOWED_EMAILS = [
