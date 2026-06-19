@@ -10,7 +10,7 @@ type ApprovalRequestBody = {
   datum: string;
   waaromNodig: string;
   risicoBijNietInvullen: string;
-  prioriteit: "Hoog";
+  prioriteit: "Laag" | "Middel" | "Hoog" | "";
   internMogelijk: "Ja" | "Nee" | "";
   interneToelichting: string;
   overwogenOpties: string;
@@ -19,11 +19,6 @@ type ApprovalRequestBody = {
   financieleToelichting: string;
   verwachteImpact: string;
   bijdrageAanDoelen: string;
-  startdatum: string;
-  domeinverantwoordelijkeBesluit: "Go" | "No-go" | "";
-  domeinverantwoordelijkeOpmerking: string;
-  cfoBesluit: "Go" | "No-go" | "";
-  cfoOpmerking: string;
 };
 
 const requiredFields: Array<keyof ApprovalRequestBody> = [
@@ -34,6 +29,7 @@ const requiredFields: Array<keyof ApprovalRequestBody> = [
   "datum",
   "waaromNodig",
   "risicoBijNietInvullen",
+  "prioriteit",
   "internMogelijk",
   "interneToelichting",
   "overwogenOpties",
@@ -42,7 +38,6 @@ const requiredFields: Array<keyof ApprovalRequestBody> = [
   "financieleToelichting",
   "verwachteImpact",
   "bijdrageAanDoelen",
-  "startdatum",
 ];
 
 function wrapText(text: string, maxChars = 90): string[] {
@@ -67,7 +62,17 @@ function wrapText(text: string, maxChars = 90): string[] {
   return lines.length ? lines : ["-"];
 }
 
-async function createApprovalRequestPdf(data: ApprovalRequestBody): Promise<Buffer> {
+function safeFileName(text: string) {
+  return text
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .toLowerCase();
+}
+
+async function createApprovalRequestPdf(
+  data: ApprovalRequestBody
+): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -76,23 +81,23 @@ async function createApprovalRequestPdf(data: ApprovalRequestBody): Promise<Buff
   const { width, height } = page.getSize();
   let y = height - 50;
 
-  const ensureSpace = (space = 70) => {
+  const ensureSpace = (space = 80) => {
     if (y < space) {
       page = pdfDoc.addPage();
       y = height - 50;
     }
   };
 
-  const draw = (text: string, size = 11, isBold = false) => {
+  const draw = (text: string, size = 11, isBold = false, indent = 50) => {
     wrapText(text, size >= 14 ? 70 : 90).forEach((line) => {
       ensureSpace();
 
       page.drawText(line, {
-        x: 50,
+        x: indent,
         y,
         size,
         font: isBold ? boldFont : font,
-        color: rgb(0, 0, 0),
+        color: rgb(0.07, 0.09, 0.16),
         maxWidth: width - 100,
       });
 
@@ -101,49 +106,48 @@ async function createApprovalRequestPdf(data: ApprovalRequestBody): Promise<Buff
   };
 
   const section = (title: string) => {
-    y -= 10;
-    draw(title, 15, true);
-    y -= 2;
+    y -= 16;
+    draw(`${title.toUpperCase()}:`, 16, true);
+    y -= 8;
   };
 
   const field = (label: string, value: string) => {
-    draw(`${label}: ${value || "-"}`, 11);
+    y -= 6;
+    draw(`${label}:`, 12, true);
+    y -= 2;
+    draw(value || "-", 11, false, 70);
+    y -= 8;
   };
 
-  draw("Aanvraag Vacature", 22, true);
+  draw("Aanvraag vacature", 22, true);
+  y -= 12;
+
   field("Manager e-mail", data.managerEmail);
 
-  section("Basis");
+  section("Basisgegevens");
   field("Hiring manager", data.hiringManager);
   field("Team", data.team);
   field("Functie", data.functie);
   field("Datum", data.datum);
 
   section("Onderbouwing");
-  field("Waarom nodig?", data.waaromNodig);
-  field("Risico bij niet invullen", data.risicoBijNietInvullen);
+  field("Waarom is deze vacature nodig?", data.waaromNodig);
+  field("Risico bij het niet invullen van de functie", data.risicoBijNietInvullen);
   field("Prioriteit", data.prioriteit);
 
   section("Interne invulling");
   field("Intern mogelijk?", data.internMogelijk);
-  field("Toelichting", data.interneToelichting);
+  field("Toelichting interne invulling", data.interneToelichting);
   field("Overwogen opties", data.overwogenOpties);
 
-  section("Financiele impact");
-  field("Kosten indicatie", data.kostenIndicatie);
+  section("Financiële impact");
+  field("Kostenindicatie", data.kostenIndicatie);
   field("Binnen budget?", data.binnenBudget);
-  field("Toelichting", data.financieleToelichting);
+  field("Financiële toelichting", data.financieleToelichting);
 
   section("Impact");
-  field("Verwachte impact (6-12m)", data.verwachteImpact);
+  field("Verwachte impact binnen 6-12 maanden", data.verwachteImpact);
   field("Bijdrage aan doelen", data.bijdrageAanDoelen);
-
-  section("Besluit");
-  field("Startdatum", data.startdatum);
-  field("Domeinverantwoordelijke", data.domeinverantwoordelijkeBesluit || "-");
-  field("Opmerking", data.domeinverantwoordelijkeOpmerking);
-  field("CFO", data.cfoBesluit || "-");
-  field("Opmerking", data.cfoOpmerking);
 
   return Buffer.from(await pdfDoc.save());
 }
@@ -152,13 +156,13 @@ export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as ApprovalRequestBody;
 
-    const missingFields = requiredFields.filter((fieldName) =>
-      !String(body[fieldName] || "").trim()
+    const missingFields = requiredFields.filter(
+      (fieldName) => !String(body[fieldName] || "").trim()
     );
 
     if (missingFields.length) {
       return NextResponse.json(
-        { error: "Missing required data", missingFields },
+        { error: "Verplichte gegevens ontbreken.", missingFields },
         { status: 400 }
       );
     }
@@ -168,7 +172,7 @@ export async function POST(req: NextRequest) {
 
     if (!recruiterEmail) {
       return NextResponse.json(
-        { error: "Recruiter email is not configured" },
+        { error: "Het e-mailadres van de recruiter is niet geconfigureerd." },
         { status: 500 }
       );
     }
@@ -176,7 +180,6 @@ export async function POST(req: NextRequest) {
     const pdfBuffer = await createApprovalRequestPdf({
       ...body,
       managerEmail: normalizedEmail,
-      prioriteit: "Hoog",
     });
 
     const transporter = nodemailer.createTransport({
@@ -192,17 +195,22 @@ export async function POST(req: NextRequest) {
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: [normalizedEmail, recruiterEmail],
-      subject: `Vacancy request submitted: ${body.functie}`,
-      text: `The vacancy request for ${body.functie} has been submitted.
+      subject: `Vacatureaanvraag ingediend: ${body.functie}`,
+      text: `Beste collega,
+
+De vacatureaanvraag voor ${body.functie} is succesvol ingediend.
 
 Hiring manager: ${body.hiringManager}
 Team: ${body.team}
-Manager email: ${normalizedEmail}
+Manager e-mail: ${normalizedEmail}
 
-The completed approval request form is attached as a PDF.`,
+Het ingevulde goedkeuringsaanvraagformulier is als PDF bijgevoegd.
+
+Met vriendelijke groet,
+Aareon Recruitment Platform`,
       attachments: [
         {
-          filename: `aanvraag-vacature-${body.functie.replace(/\s+/g, "-")}.pdf`,
+          filename: `aanvraag-vacature-${safeFileName(body.functie)}.pdf`,
           content: pdfBuffer,
           contentType: "application/pdf",
         },
@@ -214,7 +222,7 @@ The completed approval request form is attached as a PDF.`,
     console.error("Submit approval request error:", error);
 
     return NextResponse.json(
-      { error: "Failed to submit approval request" },
+      { error: "Het verzenden van de goedkeuringsaanvraag is mislukt." },
       { status: 500 }
     );
   }

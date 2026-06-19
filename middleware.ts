@@ -1,45 +1,72 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
-// Pages that don't require authentication
-const PUBLIC_PATHS = ["/"];
-const APPROVAL_REQUIRED_PATHS = ["/basics", "/job-description", "/overview", "/forward-to-recruiter"];
+const PUBLIC_PATHS = ["/", "/register"];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Allow public paths through
-  if (PUBLIC_PATHS.includes(pathname)) {
-    return NextResponse.next();
-  }
 
   // Allow API routes through
   if (pathname.startsWith("/api")) {
     return NextResponse.next();
   }
 
-  // TODO: replace this with Supabase session check:
-  // import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
-  // const supabase = createMiddlewareClient({ req: request, res: NextResponse.next() });
-  // const { data: { session } } = await supabase.auth.getSession();
-  // if (!session) return NextResponse.redirect(new URL("/login", request.url));
+  let response = NextResponse.next({ request });
 
-  // For now — check a simple cookie that gets set after login
-  // Remove this once Supabase is wired up
-  const isLoggedIn = request.cookies.get("aareon_session");
-  if (!isLoggedIn) {
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Allow public paths through (even if logged in)
+  if (PUBLIC_PATHS.includes(pathname)) {
+    return response;
+  }
+
+  // Not logged in → redirect to sign in
+  if (!user) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  const hasApproval = request.cookies.get("aareon_approval")?.value === "granted";
-  if (APPROVAL_REQUIRED_PATHS.some((p) => pathname.startsWith(p)) && !hasApproval) {
-    return NextResponse.redirect(new URL("/approval", request.url));
+  // Look up role from profiles
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("auth_user_id", user.id)
+    .single();
+
+  const role = profile?.role;
+
+  // Block managers from the director dashboard
+  if (pathname.startsWith("/director-dashboard") && role !== "director") {
+    return NextResponse.redirect(new URL("/manager-dashboard", request.url));
   }
 
-  return NextResponse.next();
+  // Block directors from the manager dashboard
+  if (pathname.startsWith("/manager-dashboard") && role !== "manager") {
+    return NextResponse.redirect(new URL("/director-dashboard", request.url));
+  }
+
+  return response;
 }
 
 export const config = {
-  // Run middleware on all routes except static files and Next internals
   matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.png|.*\\.svg).*)"],
 };

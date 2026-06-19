@@ -24,11 +24,6 @@ type ApprovalFormData = {
   financieleToelichting: string;
   verwachteImpact: string;
   bijdrageAanDoelen: string;
-  startdatum: string;
-  domeinverantwoordelijkeBesluit: "Go" | "No-go" | "";
-  domeinverantwoordelijkeOpmerking: string;
-  cfoBesluit: "Go" | "No-go" | "";
-  cfoOpmerking: string;
 };
 
 type FieldName = keyof ApprovalFormData;
@@ -49,11 +44,6 @@ const initialFormData: ApprovalFormData = {
   financieleToelichting: "",
   verwachteImpact: "",
   bijdrageAanDoelen: "",
-  startdatum: "",
-  domeinverantwoordelijkeBesluit: "",
-  domeinverantwoordelijkeOpmerking: "",
-  cfoBesluit: "",
-  cfoOpmerking: "",
 };
 
 const requiredFields: FieldName[] = [
@@ -72,7 +62,6 @@ const requiredFields: FieldName[] = [
   "financieleToelichting",
   "verwachteImpact",
   "bijdrageAanDoelen",
-  "startdatum",
 ];
 
 function FieldError({ message }: { message?: string }) {
@@ -98,9 +87,7 @@ function Section({
         {title}
       </h2>
 
-      <div className="grid gap-5 md:grid-cols-2">
-        {children}
-      </div>
+      <div className="grid gap-5 md:grid-cols-2">{children}</div>
     </section>
   );
 }
@@ -145,7 +132,7 @@ export default function ApprovalRequestPage() {
 
     requiredFields.forEach((field) => {
       if (!String(formData[field] || "").trim()) {
-        nextErrors[field] = "This field is required.";
+        nextErrors[field] = "Dit veld is verplicht.";
       }
     });
 
@@ -174,14 +161,14 @@ export default function ApprovalRequestPage() {
       });
 
       if (!res.ok) {
-        alert("The request could not be submitted.");
+        alert("De aanvraag kon niet worden verzonden.");
         return;
       }
 
       setShowConfirmation(true);
     } catch (error) {
       console.error(error);
-      alert("The request could not be submitted.");
+      alert("De aanvraag kon niet worden verzonden.");
     } finally {
       setIsSubmitting(false);
     }
@@ -225,7 +212,7 @@ export default function ApprovalRequestPage() {
       >
         <div className="mb-8">
           <p className="mb-3 font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-aareon-bright">
-            Approval request
+            Goedkeuringsaanvraag
           </p>
 
           <h1 className="font-title text-[clamp(38px,6vw,64px)] italic leading-[1.02] text-aareon-headline">
@@ -234,7 +221,7 @@ export default function ApprovalRequestPage() {
         </div>
 
         <div className="space-y-8 rounded-lg border border-aareon-stone bg-white p-6 shadow-sm sm:p-8">
-          <Section title="Basis">
+          <Section title="Basisgegevens">
             <div>
               <label className={labelClass} htmlFor="hiringManager">
                 Hiring manager
@@ -301,7 +288,7 @@ export default function ApprovalRequestPage() {
           <Section title="Onderbouwing">
             <div className="md:col-span-2">
               <label className={labelClass} htmlFor="waaromNodig">
-                Waarom nodig?
+                Waarom is deze vacature nodig?
               </label>
 
               <textarea
@@ -316,23 +303,23 @@ export default function ApprovalRequestPage() {
 
             <div className="md:col-span-2">
               <label className={labelClass} htmlFor="risicoBijNietInvullen">
-                Risico bij niet invullen
+                Risico bij het niet invullen van de functie
               </label>
 
               <textarea
                 id="risicoBijNietInvullen"
                 className={textareaClass}
                 value={formData.risicoBijNietInvullen}
-                onChange={(e) => setValue("risicoBijNietInvullen", e.target.value)}
+                onChange={(e) =>
+                  setValue("risicoBijNietInvullen", e.target.value)
+                }
               />
 
               <FieldError message={errors.risicoBijNietInvullen} />
             </div>
 
             <div>
-              <label className={labelClass}>
-                Prioriteit
-              </label>
+              <label className={labelClass}>Prioriteit</label>
 
               <div className="grid grid-cols-3 gap-2">
                 {["Laag", "Middel", "Hoog"].map((option) => (
@@ -340,7 +327,10 @@ export default function ApprovalRequestPage() {
                     key={option}
                     type="button"
                     onClick={() =>
-                      setValue("prioriteit", option as "Laag" | "Middel" | "Hoog")
+                      setValue(
+                        "prioriteit",
+                        option as "Laag" | "Middel" | "Hoog"
+                      )
                     }
                     className={`h-12 rounded-lg border text-sm font-semibold transition ${
                       formData.prioriteit === option
@@ -359,9 +349,7 @@ export default function ApprovalRequestPage() {
 
           <Section title="Interne invulling">
             <div>
-              <label className={labelClass}>
-                Intern mogelijk?
-              </label>
+              <label className={labelClass}>Intern mogelijk?</label>
 
               <div className="grid grid-cols-2 gap-2">
                 {["Ja", "Nee"].map((option) => (
@@ -385,7 +373,7 @@ export default function ApprovalRequestPage() {
 
             <div>
               <label className={labelClass} htmlFor="interneToelichting">
-                Toelichting
+                Toelichting interne invulling
               </label>
 
               <textarea
@@ -417,7 +405,7 @@ export default function ApprovalRequestPage() {
           <Section title="Financiële impact">
             <div>
               <label className={labelClass} htmlFor="kostenIndicatie">
-                Kosten indicatie
+                Kostenindicatie
               </label>
 
               <input
@@ -431,9 +419,7 @@ export default function ApprovalRequestPage() {
             </div>
 
             <div>
-              <label className={labelClass}>
-                Binnen budget?
-              </label>
+              <label className={labelClass}>Binnen budget?</label>
 
               <div className="grid grid-cols-2 gap-2">
                 {["Ja", "Nee"].map((option) => (
@@ -457,14 +443,16 @@ export default function ApprovalRequestPage() {
 
             <div className="md:col-span-2">
               <label className={labelClass} htmlFor="financieleToelichting">
-                Toelichting
+                Financiële toelichting
               </label>
 
               <textarea
                 id="financieleToelichting"
                 className={textareaClass}
                 value={formData.financieleToelichting}
-                onChange={(e) => setValue("financieleToelichting", e.target.value)}
+                onChange={(e) =>
+                  setValue("financieleToelichting", e.target.value)
+                }
               />
 
               <FieldError message={errors.financieleToelichting} />
@@ -474,7 +462,7 @@ export default function ApprovalRequestPage() {
           <Section title="Impact">
             <div>
               <label className={labelClass} htmlFor="verwachteImpact">
-                Verwachte impact (6-12m)
+                Verwachte impact binnen 6-12 maanden
               </label>
 
               <textarea
@@ -502,103 +490,6 @@ export default function ApprovalRequestPage() {
               <FieldError message={errors.bijdrageAanDoelen} />
             </div>
           </Section>
-
-          <Section title="Besluit">
-            <div>
-              <label className={labelClass} htmlFor="startdatum">
-                Startdatum
-              </label>
-
-              <input
-                id="startdatum"
-                type="date"
-                className={inputClass}
-                value={formData.startdatum}
-                onChange={(e) => setValue("startdatum", e.target.value)}
-              />
-
-              <FieldError message={errors.startdatum} />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Domeinverantwoordelijke
-              </label>
-
-              <div className="grid grid-cols-2 gap-2">
-                {["Go", "No-go"].map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() =>
-                      setValue("domeinverantwoordelijkeBesluit", option)
-                    }
-                    className={`h-12 rounded-lg border text-sm font-semibold transition ${
-                      formData.domeinverantwoordelijkeBesluit === option
-                        ? "border-aareon-bright bg-aareon-bright text-white"
-                        : "border-aareon-stone bg-white text-aareon-headline"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label
-                className={labelClass}
-                htmlFor="domeinverantwoordelijkeOpmerking"
-              >
-                Opmerking
-              </label>
-
-              <textarea
-                id="domeinverantwoordelijkeOpmerking"
-                className={textareaClass}
-                value={formData.domeinverantwoordelijkeOpmerking}
-                onChange={(e) =>
-                  setValue("domeinverantwoordelijkeOpmerking", e.target.value)
-                }
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                CFO
-              </label>
-
-              <div className="grid grid-cols-2 gap-2">
-                {["Go", "No-go"].map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setValue("cfoBesluit", option)}
-                    className={`h-12 rounded-lg border text-sm font-semibold transition ${
-                      formData.cfoBesluit === option
-                        ? "border-aareon-bright bg-aareon-bright text-white"
-                        : "border-aareon-stone bg-white text-aareon-headline"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className={labelClass} htmlFor="cfoOpmerking">
-                Opmerking
-              </label>
-
-              <textarea
-                id="cfoOpmerking"
-                className={textareaClass}
-                value={formData.cfoOpmerking}
-                onChange={(e) => setValue("cfoOpmerking", e.target.value)}
-              />
-            </div>
-          </Section>
         </div>
 
         <div className="mt-8 flex justify-end">
@@ -607,7 +498,7 @@ export default function ApprovalRequestPage() {
             disabled={isSubmitting}
             className="inline-flex min-h-12 items-center justify-center rounded-lg bg-aareon-blue px-7 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a1d8a] hover:shadow-[0_12px_24px_rgba(5,17,99,0.18)] focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Submitting..." : "Aanvraag verzenden"}
+            {isSubmitting ? "Verzenden..." : "Aanvraag verzenden"}
           </button>
         </div>
       </form>
@@ -629,15 +520,15 @@ export default function ApprovalRequestPage() {
               id="confirmation-title"
               className="text-2xl font-semibold text-aareon-headline"
             >
-              Request submitted
+              Aanvraag verzonden
             </h2>
 
             <p className="mt-4 text-sm leading-6 text-aareon-body/78">
-              Your request has been submitted. You will receive a confirmation by
-              email. The recruiter has also received the request and will review
-              it. The recruiter will then forward the request to the directors
-              for approval. You will receive further instructions from the
-              recruiter soon.
+              Uw aanvraag is verzonden. U ontvangt een bevestiging per e-mail.
+              De recruiter heeft de aanvraag ook ontvangen en zal deze
+              beoordelen. Daarna stuurt de recruiter de aanvraag door naar de
+              directie voor goedkeuring. U ontvangt binnenkort verdere
+              instructies van de recruiter.
             </p>
 
             <button
@@ -645,7 +536,7 @@ export default function ApprovalRequestPage() {
               onClick={() => router.push("/")}
               className="mt-7 inline-flex min-h-11 items-center justify-center rounded-lg bg-aareon-blue px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a1d8a] hover:shadow-[0_12px_24px_rgba(5,17,99,0.18)] focus:outline-none focus:ring-2 focus:ring-aareon-bright focus:ring-offset-2"
             >
-              Close
+              Sluiten
             </button>
           </div>
         </div>
