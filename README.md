@@ -59,3 +59,58 @@ This project implements a unique visual style characterized by:
 - `/components`: Sophic Brutalist UI components (Wizard, Preview, Cards).
 - `/lib`: Session management and export logic.
 - `/types`: TypeScript definitions for the intake flow.
+
+## Developer Setup Guide (Develop Branch)
+**Prerequisites**
+- Node.js (v18 or higher)
+- npm (comes with Node.js)
+- A code editor (VS Code recommended)
+
+## Clone & Install
+git clone https://github.com/FlaviusPetrasciuc/Aareon.git
+cd Aareon
+npm install
+
+## Authentication
+This branch uses a simple email-based login — no password, no database, no Supabase required.
+
+On the sign in page, the user enters their email address. The system checks it against a hardcoded list of allowed emails defined in lib/aareonAccess.ts. If the email matches, the user is granted access and redirected to the intake wizard. If it does not match, an error is shown.
+
+## Adding or Removing Allowed Emails
+Open lib/aareonAccess.ts and edit the ALLOWED_EMAILS array:
+    const ALLOWED_EMAILS = [
+    "niels.benjamins@aareon.nl",
+    "roy.boelens@aareon.nl",
+    "marcel.vrieling@aareon.nl",
+    // add or remove emails here
+    ];
+
+All emails must end in @aareon.nl. After editing the file, save it — no restart required in development mode.
+
+## Environment Variables
+Create a .env.local file in the project root. No Supabase keys are needed for this branch — only the AI and email keys:
+    # SMTP (for sending emails to recruiter)
+    SMTP_HOST=smtp.gmail.com
+    SMTP_PORT=587
+    SMTP_USER=your-email@gmail.com
+    SMTP_PASS=your-app-password
+
+    # AI (for job description generation)
+    ANTHROPIC_API_KEY=your-anthropic-key
+    ANTHROPIC_MODEL=claude-sonnet-4-6
+
+## No Database Required
+This branch does not use a database. All session data (manager email, form inputs, AI-generated job description) is stored in the browser's localStorage. This means:
+- Data persists across page refreshes within the same browser session
+- Data is lost if the user clears their browser storage or switches browsers
+- No backend setup is needed beyond running npm run dev
+
+## Common Issues
+**"Please enter a valid email address" on the login page**
+→ The email is not in the ALLOWED_EMAILS list in lib/aareonAccess.ts. Add it there.
+
+**Environment variables not loading**
+→ Make sure .env.local is in the project root (same level as package.json) and restart the dev server.
+
+**Form data lost after closing the browser**
+→ This is expected — data is stored in localStorage and does not persist across browser sessions.
