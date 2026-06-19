@@ -341,7 +341,7 @@ export default function CreateJobPostingPage() {
                                             { label: "Oosterhout (Twinq)", value: 'oosterhout-twinq' },
                                             { label: "Roermond", value: 'roermond' },
                                             { label: "Sneek (Embrace)", value: 'sneek-embrace' },
-                                            { label: "Sneed (Viadata)", value: 'sneek-viadata' },
+                                            { label: "Sneek (Viadata)", value: 'sneek-viadata' },
                                         ]}
                                     />
                                     {getFieldError('location') && (
