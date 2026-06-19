@@ -2,37 +2,35 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { AAREON_EMAIL_DOMAINS, isAllowedAareonEmail, normalizeEmail } from "@/lib/aareonAccess";
-import LoadingSpinner from "@/components/globals/LoadingSpinner";
+import Link from "next/link";
+import { signIn } from "@/app/actions/auth";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [touched, setTouched] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const isValid = isAllowedAareonEmail(email) && password.length >= 8 && password === confirmPassword;
-  const showError = touched && !isValid;
-  const allowedDomains = AAREON_EMAIL_DOMAINS.map((domain) => `@${domain}`).join(" or ");
+  const [apiError, setApiError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setTouched(true);
+    setApiError(null);
 
-    if (!isValid) return;
+    if (!email || !password) return;
     setLoading(true);
 
-    const normalizedEmail = normalizeEmail(email);
-    localStorage.setItem("managerEmail", normalizedEmail);
-    localStorage.removeItem("aareonApprovalStatus");
-    document.cookie = `aareon_session=${normalizedEmail}; path=/; max-age=86400`;
-    document.cookie = "aareon_approval=; path=/; max-age=0";
+    const formData = new FormData();
+    formData.set("email", email.trim().toLowerCase());
+    formData.set("password", password);
 
-    await new Promise((r) => setTimeout(r, 900));
-    router.push("/approval");
+    const result = await signIn(formData);
+
+    // If signIn succeeds it redirects server-side, so we only get here on error
+    if (result?.error) {
+      setApiError(result.error);
+      setLoading(false);
+    }
   }
 
   return (
@@ -40,11 +38,9 @@ export default function LoginPage() {
 
       {/* ── Left brand panel ── */}
       <div className="relative hidden md:flex flex-col justify-between overflow-hidden w-[45%] shrink-0 bg-aareon-blue px-12 py-12">
-        {/* blobs */}
         <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-aareon-bright/15 pointer-events-none" />
         <div className="absolute -bottom-24 -right-14 w-96 h-96 rounded-full bg-aareon-bright/10 pointer-events-none" />
 
-        {/* Logo — white */}
         <div className="relative z-10">
           <Image
             src="/aareon-logo.png"
@@ -55,7 +51,6 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Hero */}
         <div className="relative z-10">
           <h1 className="font-title text-[clamp(34px,4vw,50px)] font-normal leading-[1.08] text-white mb-5 italic">
             Connecting<br />
@@ -67,7 +62,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Pills */}
         <div className="relative z-10 flex flex-wrap gap-2">
           {["People", "Process", "Property"].map((p) => (
             <span
@@ -91,8 +85,6 @@ export default function LoginPage() {
             Voer uw Aareon-zakelijk e-mailadres in om de goedkeuringsvalidatie te starten.
           </p>
 
-          <LoadingSpinner isVisible={loading} />
-
           <form onSubmit={handleSubmit} noValidate>
             <div className="mb-5">
               <label
@@ -106,23 +98,39 @@ export default function LoginPage() {
                 type="email"
                 autoFocus
                 autoComplete="email"
-                placeholder=" voorbeeld@aareon.nl"
+                placeholder="voorbeeld@aareon.nl"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={() => setTouched(true)}
-                className={[
-                  "w-full px-4 py-3 font-body text-sm font-light text-aareon-headline bg-white rounded-lg outline-none transition-all",
-                  showError
-                    ? "border-[1.5px] border-aareon-coral shadow-[0_0_0_3px_rgba(255,127,98,0.12)]"
-                    : "border-[1.5px] border-aareon-stone focus:border-aareon-bright focus:shadow-[0_0_0_3px_rgba(8,109,251,0.12)]",
-                ].join(" ")}
+                className="w-full px-4 py-3 font-body text-sm font-light text-aareon-headline bg-white rounded-lg outline-none transition-all border-[1.5px] border-aareon-stone focus:border-aareon-bright focus:shadow-[0_0_0_3px_rgba(8,109,251,0.12)]"
               />
-              {showError && (
-                <p className="font-body text-xs text-aareon-coral mt-1.5">
-                  Voer een geldig {allowedDomains} e-mailadres in.
-                </p>
-              )}
             </div>
+
+            <div className="mb-5">
+              <label
+                htmlFor="password"
+                className="block font-mono text-[10px] font-medium tracking-[0.15em] uppercase text-aareon-body mb-2"
+              >
+                Wachtwoord
+              </label>
+              <input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => setTouched(true)}
+                className="w-full px-4 py-3 font-body text-sm font-light text-aareon-headline bg-white rounded-lg outline-none transition-all border-[1.5px] border-aareon-stone focus:border-aareon-bright focus:shadow-[0_0_0_3px_rgba(8,109,251,0.12)]"
+              />
+            </div>
+
+            {apiError && (
+              <div className="mb-4 rounded-lg border border-aareon-coral/30 bg-aareon-coral/10 px-4 py-3">
+                <p className="font-body text-xs text-aareon-coral">{apiError}</p>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
@@ -135,6 +143,16 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          <div className="mt-4 text-center">
+            <span className="font-body text-[13px] text-aareon-body/70">
+              Heeft u nog geen account?{" "}
+              <Link href="/register" className="font-medium text-aareon-blue hover:text-aareon-bright transition-colors">
+                Account aanmaken
+              </Link>
+            </span>
+          </div>
+
         </div>
       </div>
     </div>
